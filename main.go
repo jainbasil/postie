@@ -11,6 +11,7 @@ import (
 	"postie/pkg/auth"
 	"postie/pkg/client"
 	"postie/pkg/collection"
+	"postie/pkg/context"
 	"postie/pkg/middleware"
 )
 
@@ -45,6 +46,8 @@ func main() {
 		handleUpdate()
 	case "remove":
 		handleRemove()
+	case "context":
+		handleContext()
 	case "help", "--help", "-h":
 		printUsage()
 	default:
@@ -64,9 +67,9 @@ func printUsage() {
 	fmt.Println("  post <url>          Send a POST request")
 	fmt.Println("  put <url>           Send a PUT request")
 	fmt.Println("  delete <url>        Send a DELETE request")
-	fmt.Println("  run <collection>    Run a collection file")
-	fmt.Println("  list <collection>   List requests in a collection")
-	fmt.Println("  env <collection>    Show environments in a collection")
+	fmt.Println("  run [collection]    Run a collection file (uses context if not specified)")
+	fmt.Println("  list [collection]   List requests in a collection (uses context if not specified)")
+	fmt.Println("  env [collection]    Show environments in a collection (uses context if not specified)")
 	fmt.Println("  demo                Run demonstration examples")
 	fmt.Println()
 	fmt.Println("Collection Management:")
@@ -78,16 +81,36 @@ func printUsage() {
 	fmt.Println("  update api <file> <id>          Update API")
 	fmt.Println("  remove apigroup <file> <id>     Remove API group")
 	fmt.Println("  remove api <file> <id>          Remove API")
+	fmt.Println()
+	fmt.Println("Context Management:")
+	fmt.Println("  context set --collection <file> [--env <environment>]  Set default collection and environment")
+	fmt.Println("  context show                                           Show current context")
+	fmt.Println("  context clear                                          Clear current context")
+	fmt.Println()
 	fmt.Println("  help                Show this help message")
 	fmt.Println()
 	fmt.Println("Examples:")
+	fmt.Println("  # Basic HTTP requests")
 	fmt.Println("  postie get https://api.github.com/users/octocat")
 	fmt.Println("  postie post https://httpbin.org/post")
+	fmt.Println()
+	fmt.Println("  # Collection management with explicit file")
 	fmt.Println("  postie run collections/jsonplaceholder.collection.json")
 	fmt.Println("  postie run collections/jsonplaceholder.collection.json --env \"Local Development\"")
 	fmt.Println("  postie list collections/jsonplaceholder.collection.json")
+	fmt.Println()
+	fmt.Println("  # Context-based workflow (set once, use everywhere)")
+	fmt.Println("  postie context set --collection collections/jsonplaceholder.collection.json --env production")
+	fmt.Println("  postie context show")
+	fmt.Println("  postie run                    # Uses context collection and environment")
+	fmt.Println("  postie list                   # Uses context collection")
+	fmt.Println("  postie env                    # Uses context collection")
+	fmt.Println("  postie run --env development  # Override context environment")
+	fmt.Println()
+	fmt.Println("  # Create new resources")
 	fmt.Println("  postie create collection \"My API\" --file my-api.collection.json")
 	fmt.Println("  postie create apigroup my-api.collection.json \"Users\"")
+	fmt.Println()
 	fmt.Println("  postie demo")
 }
 
@@ -313,19 +336,43 @@ func runDemo() {
 }
 
 func handleCollection() {
-	if len(os.Args) < 3 {
-		fmt.Println("Error: Collection file required")
-		fmt.Println("Usage: postie run <collection.json> [--env <environment>] [--request <request-name>] [--id <request-id>]")
-		return
-	}
-
-	collectionFile := os.Args[2]
+	collectionFile := ""
 	environment := ""
 	requestName := ""
 	requestID := ""
 
+	// Check if the first arg is a flag or a file
+	useContext := len(os.Args) < 3 || strings.HasPrefix(os.Args[2], "--") || strings.HasPrefix(os.Args[2], "-")
+
+	if useContext {
+		ctx, err := context.Load()
+		if err != nil {
+			fmt.Printf("Error loading context: %v\n", err)
+			return
+		}
+
+		if !ctx.HasCollection() {
+			fmt.Println("Error: Collection file required")
+			fmt.Println("Usage: postie run [collection.json] [--env <environment>] [--request <request-name>] [--id <request-id>]")
+			fmt.Println()
+			fmt.Println("Or set a default collection using:")
+			fmt.Println("  postie context set --collection <file>")
+			return
+		}
+
+		collectionFile = ctx.GetCollection()
+		environment = ctx.GetEnvironment()
+	} else {
+		collectionFile = os.Args[2]
+	}
+
 	// Parse additional arguments
-	for i := 3; i < len(os.Args); i++ {
+	startIdx := 2
+	if !useContext {
+		startIdx = 3
+	}
+
+	for i := startIdx; i < len(os.Args); i++ {
 		switch os.Args[i] {
 		case "--env", "-e":
 			if i+1 < len(os.Args) {
@@ -388,17 +435,41 @@ func handleCollection() {
 }
 
 func handleListCollection() {
-	if len(os.Args) < 3 {
-		fmt.Println("Error: Collection file required")
-		fmt.Println("Usage: postie list <collection.json> [--env <environment>]")
-		return
-	}
-
-	collectionFile := os.Args[2]
+	collectionFile := ""
 	environment := ""
 
+	// Check if the first arg is a flag or a file
+	useContext := len(os.Args) < 3 || strings.HasPrefix(os.Args[2], "--") || strings.HasPrefix(os.Args[2], "-")
+
+	if useContext {
+		ctx, err := context.Load()
+		if err != nil {
+			fmt.Printf("Error loading context: %v\n", err)
+			return
+		}
+
+		if !ctx.HasCollection() {
+			fmt.Println("Error: Collection file required")
+			fmt.Println("Usage: postie list [collection.json] [--env <environment>]")
+			fmt.Println()
+			fmt.Println("Or set a default collection using:")
+			fmt.Println("  postie context set --collection <file>")
+			return
+		}
+
+		collectionFile = ctx.GetCollection()
+		environment = ctx.GetEnvironment()
+	} else {
+		collectionFile = os.Args[2]
+	}
+
 	// Parse additional arguments
-	for i := 3; i < len(os.Args); i++ {
+	startIdx := 2
+	if !useContext {
+		startIdx = 3
+	}
+
+	for i := startIdx; i < len(os.Args); i++ {
 		switch os.Args[i] {
 		case "--env", "-e":
 			if i+1 < len(os.Args) {
@@ -428,13 +499,31 @@ func handleListCollection() {
 }
 
 func handleEnvironment() {
-	if len(os.Args) < 3 {
-		fmt.Println("Error: Collection file required")
-		fmt.Println("Usage: postie env <collection.json>")
-		return
-	}
+	collectionFile := ""
 
-	collectionFile := os.Args[2]
+	// Check if the first arg is a flag or a file
+	useContext := len(os.Args) < 3 || strings.HasPrefix(os.Args[2], "--") || strings.HasPrefix(os.Args[2], "-")
+
+	if useContext {
+		ctx, err := context.Load()
+		if err != nil {
+			fmt.Printf("Error loading context: %v\n", err)
+			return
+		}
+
+		if !ctx.HasCollection() {
+			fmt.Println("Error: Collection file required")
+			fmt.Println("Usage: postie env [collection.json]")
+			fmt.Println()
+			fmt.Println("Or set a default collection using:")
+			fmt.Println("  postie context set --collection <file>")
+			return
+		}
+
+		collectionFile = ctx.GetCollection()
+	} else {
+		collectionFile = os.Args[2]
+	}
 
 	// Load collection
 	coll, err := collection.LoadCollection(collectionFile)
@@ -1066,4 +1155,148 @@ func handleRemoveApi() {
 	fmt.Printf("✅ API removed successfully\n")
 	fmt.Printf("🆔 ID: %s\n", apiID)
 	fmt.Printf("📁 Collection: %s\n", collectionFile)
+}
+
+// handleContext handles context commands
+func handleContext() {
+	if len(os.Args) < 3 {
+		fmt.Println("Usage:")
+		fmt.Println("  postie context set --collection <file> [--env <environment>]")
+		fmt.Println("  postie context show")
+		fmt.Println("  postie context clear")
+		return
+	}
+
+	subcommand := os.Args[2]
+
+	switch subcommand {
+	case "set":
+		handleContextSet()
+	case "show":
+		handleContextShow()
+	case "clear":
+		handleContextClear()
+	default:
+		fmt.Printf("Unknown context subcommand: %s\n", subcommand)
+		fmt.Println("Available subcommands: set, show, clear")
+	}
+}
+
+// handleContextSet sets the current context
+func handleContextSet() {
+	collectionFile := ""
+	environment := ""
+
+	// Parse arguments
+	for i := 3; i < len(os.Args); i++ {
+		switch os.Args[i] {
+		case "--collection", "-c":
+			if i+1 < len(os.Args) {
+				collectionFile = os.Args[i+1]
+				i++
+			}
+		case "--env", "-e":
+			if i+1 < len(os.Args) {
+				environment = os.Args[i+1]
+				i++
+			}
+		}
+	}
+
+	// Load current context
+	ctx, err := context.Load()
+	if err != nil {
+		fmt.Printf("Error loading context: %v\n", err)
+		return
+	}
+
+	// Update collection if provided
+	if collectionFile != "" {
+		if err := ctx.SetCollection(collectionFile); err != nil {
+			fmt.Printf("Error setting collection: %v\n", err)
+			return
+		}
+		fmt.Printf("✅ Collection set to: %s\n", ctx.GetCollection())
+	}
+
+	// Update environment if provided
+	if environment != "" {
+		// Validate environment exists in the collection
+		if ctx.HasCollection() {
+			coll, err := collection.LoadCollection(ctx.GetCollection())
+			if err != nil {
+				fmt.Printf("Error loading collection: %v\n", err)
+				return
+			}
+			if _, err := coll.GetEnvironment(environment); err != nil {
+				fmt.Printf("Error: %v\n", err)
+				fmt.Printf("Available environments: %s\n", strings.Join(coll.GetEnvironmentNames(), ", "))
+				return
+			}
+		}
+		ctx.SetEnvironment(environment)
+		fmt.Printf("✅ Environment set to: %s\n", environment)
+	}
+
+	// Save context
+	if err := ctx.Save(); err != nil {
+		fmt.Printf("Error saving context: %v\n", err)
+		return
+	}
+
+	if collectionFile == "" && environment == "" {
+		fmt.Println("No changes made. Use --collection or --env to set values.")
+	}
+}
+
+// handleContextShow shows the current context
+func handleContextShow() {
+	ctx, err := context.Load()
+	if err != nil {
+		fmt.Printf("Error loading context: %v\n", err)
+		return
+	}
+
+	if ctx.IsEmpty() {
+		fmt.Println("No context is currently set.")
+		fmt.Println()
+		fmt.Println("Use 'postie context set' to configure a default collection and environment:")
+		fmt.Println("  postie context set --collection <file> [--env <environment>]")
+		return
+	}
+
+	fmt.Println("Current Context:")
+	fmt.Println(strings.Repeat("=", 50))
+
+	if ctx.HasCollection() {
+		fmt.Printf("Collection:  %s\n", ctx.GetCollection())
+
+		// Try to load and show collection info
+		if coll, err := collection.LoadCollection(ctx.GetCollection()); err == nil {
+			fmt.Printf("Name:        %s\n", coll.Collection.Info.Name)
+			if coll.Collection.Info.Description != "" {
+				fmt.Printf("Description: %s\n", coll.Collection.Info.Description)
+			}
+		}
+	} else {
+		fmt.Println("Collection:  (not set)")
+	}
+
+	if ctx.HasEnvironment() {
+		fmt.Printf("Environment: %s\n", ctx.GetEnvironment())
+	} else {
+		fmt.Println("Environment: (not set)")
+	}
+
+	fmt.Println(strings.Repeat("=", 50))
+}
+
+// handleContextClear clears the current context
+func handleContextClear() {
+	if err := context.Clear(); err != nil {
+		fmt.Printf("Error clearing context: %v\n", err)
+		return
+	}
+
+	fmt.Println("✅ Context cleared successfully")
 }
