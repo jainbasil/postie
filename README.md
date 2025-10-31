@@ -55,65 +55,316 @@ go build -o postie .
 
 ## Quick Start
 
-### Basic Usage
+This guide will walk you through the complete workflow of using Postie, from creating your first collection to running API tests.
+
+### 1. Basic API Testing
+
+Start with simple HTTP requests to test any API:
 
 ```bash
 # Basic GET request
 ./postie get https://api.github.com/users/octocat
 
-# POST request with data
-./postie post https://httpbin.org/post
-
-# Run interactive demo
-./postie demo
-
-# Show help and all commands
-./postie help
-```
-
-### Advanced Examples
-
-```bash
-# POST with JSON data and custom headers
-./postie post https://api.example.com/users \
+# POST request with JSON data
+./postie post https://httpbin.org/post \
   --header "Content-Type: application/json" \
-  --header "Authorization: Bearer token123" \
   --data '{"name": "John", "email": "john@example.com"}'
 
-# Run API collection
-./postie run collections/my-api.collection.json
+# Test different HTTP methods
+./postie put https://httpbin.org/put --data '{"id": 1, "name": "Updated"}'
+./postie delete https://httpbin.org/delete
+
+# Run interactive demo to see all features
+./postie demo
+```
+
+### 2. Create Your First Collection
+
+Collections organize your API requests into reusable groups:
+
+```bash
+# Create a new collection
+./postie create collection "My Blog API" --file blog-api.collection.json
+
+# This creates a new file: blog-api.collection.json
+```
+
+### 3. Create API Groups
+
+Organize related APIs into logical groups:
+
+```bash
+# Create a group for user-related APIs
+./postie create apigroup blog-api.collection.json "Users"
+
+# Create a group for blog post APIs  
+./postie create apigroup blog-api.collection.json "Posts"
+
+# View your collection structure
+./postie list blog-api.collection.json
+```
+
+### 4. Add API Endpoints
+
+Add specific API endpoints to your groups:
+
+```bash
+# Add a GET request to fetch all users
+./postie create api blog-api.collection.json "users-group-id" "Get All Users" GET "{{baseUrl}}/users"
+
+# Add a POST request to create a user
+./postie create api blog-api.collection.json "users-group-id" "Create User" POST "{{baseUrl}}/users"
+
+# Add a GET request to fetch posts
+./postie create api blog-api.collection.json "posts-group-id" "Get All Posts" GET "{{baseUrl}}/posts"
+```
+
+### 5. Set Up Environments
+
+Create different environments for development, staging, and production:
+
+```bash
+# View existing environments (if any)
+./postie env blog-api.collection.json
+
+# Environments are defined in the collection or separate files
+# See collections/development.environment.json for examples
+```
+
+### 6. Run Your APIs
+
+Execute your collection with different environments:
+
+```bash
+# Run entire collection
+./postie run blog-api.collection.json
 
 # Run with specific environment
-./postie run collections/my-api.collection.json --env "Production"
+./postie run blog-api.collection.json --env "Development"
 
+# Run specific request by name
+./postie run blog-api.collection.json --request "Get All Users"
+
+# Run specific request by ID
+./postie run blog-api.collection.json --id "user-123"
+```
+
+### 7. Update and Manage APIs
+
+Modify your APIs as they evolve:
+
+```bash
+# Update API endpoint
+./postie update api blog-api.collection.json "user-get-id" --url "{{baseUrl}}/users/v2"
+
+# Update API method
+./postie update api blog-api.collection.json "user-post-id" --method PATCH
+
+# Update group information
+./postie update apigroup blog-api.collection.json "users-group-id" --name "User Management"
+
+# Remove APIs or groups when no longer needed
+./postie remove api blog-api.collection.json "old-api-id"
+./postie remove apigroup blog-api.collection.json "deprecated-group-id"
+```
+
+### 8. Explore Examples
+
+Try the included examples to learn advanced features:
+
+```bash
+# Run the comprehensive demo
+./postie demo
+
+# Explore the JSONPlaceholder collection
+./postie list collections/jsonplaceholder.collection.json
+./postie run collections/jsonplaceholder.collection.json
+
+# Run with different environments
+./postie run collections/jsonplaceholder.collection.json --env "JSONPlaceholder"
+```
+
+### Pro Tips
+
+- Use `{{baseUrl}}` and other variables in your URLs for environment flexibility
+- Start with the demo to understand all features: `./postie demo`
+- Use `--help` with any command for detailed usage: `./postie create --help`
+- Collections are JSON files - you can edit them directly if needed
+
+## Commands
+
+### HTTP Request Commands
+
+Execute HTTP requests directly from the command line:
+
+```bash
+# GET requests
+./postie get https://api.github.com/users/octocat
+./postie get https://httpbin.org/get --header "Authorization: Bearer token123"
+./postie get "https://api.example.com/users?page=1&limit=10"
+
+# POST requests
+./postie post https://httpbin.org/post
+./postie post https://api.example.com/users \
+  --header "Content-Type: application/json" \
+  --data '{"name": "John Doe", "email": "john@example.com"}'
+
+# PUT requests
+./postie put https://api.example.com/users/123 \
+  --header "Content-Type: application/json" \
+  --data '{"name": "Jane Doe", "email": "jane@example.com"}'
+
+# DELETE requests
+./postie delete https://api.example.com/users/123
+./postie delete https://api.example.com/users/123 \
+  --header "Authorization: Bearer token123"
+```
+
+### Collection Management Commands
+
+#### Create Commands
+
+```bash
+# Create a new collection
+./postie create collection "My API Collection"
+./postie create collection "Blog API" --file blog-api.collection.json
+
+# Create API groups within a collection
+./postie create apigroup blog-api.collection.json "Users"
+./postie create apigroup blog-api.collection.json "Posts" --id "posts-group"
+
+# Create API endpoints
+./postie create api blog-api.collection.json "users-group-id" "Get All Users" GET "{{baseUrl}}/users"
+./postie create api blog-api.collection.json "users-group-id" "Create User" POST "{{baseUrl}}/users" --id "create-user"
+./postie create api blog-api.collection.json "posts-group-id" "Get Post" GET "{{baseUrl}}/posts/{{postId}}"
+```
+
+#### Update Commands
+
+```bash
+# Update collection metadata
+./postie update collection blog-api.collection.json --name "Updated Blog API"
+./postie update collection blog-api.collection.json --description "API for blog management"
+
+# Update API groups
+./postie update apigroup blog-api.collection.json "users-group-id" --name "User Management"
+./postie update apigroup blog-api.collection.json "posts-group-id" --description "Blog post operations"
+
+# Update API endpoints
+./postie update api blog-api.collection.json "get-users-id" --name "Fetch All Users"
+./postie update api blog-api.collection.json "create-user-id" --method PATCH
+./postie update api blog-api.collection.json "get-post-id" --url "{{baseUrl}}/api/v2/posts/{{postId}}"
+```
+
+#### Remove Commands
+
+```bash
+# Remove API endpoints
+./postie remove api blog-api.collection.json "deprecated-api-id"
+
+# Remove API groups (removes all APIs in the group)
+./postie remove apigroup blog-api.collection.json "deprecated-group-id"
+```
+
+### Collection Execution Commands
+
+```bash
+# Run entire collection
+./postie run collections/jsonplaceholder.collection.json
+./postie run blog-api.collection.json
+
+# Run with specific environment
+./postie run blog-api.collection.json --env "Development"
+./postie run blog-api.collection.json --env "Production"
+
+# Run specific request by name
+./postie run blog-api.collection.json --request "Get All Users"
+./postie run blog-api.collection.json --request "Create User"
+
+# Run specific request by ID
+./postie run blog-api.collection.json --id "user-get-all"
+./postie run blog-api.collection.json --id "post-create"
+```
+
+### Information Commands
+
+```bash
 # List all requests in a collection
-./postie list collections/my-api.collection.json
+./postie list collections/jsonplaceholder.collection.json
+./postie list blog-api.collection.json --env "Development"
+
+# Show environments in a collection
+./postie env collections/jsonplaceholder.collection.json
+./postie env blog-api.collection.json
+
+# Show help for any command
+./postie help
+./postie --help
+./postie -h
 ```
 
-## 📋 Commands
+### Demo and Learning Commands
 
-### HTTP Methods
 ```bash
-postie get <url>          # GET request
-postie post <url>         # POST request  
-postie put <url>          # PUT request
-postie delete <url>       # DELETE request
-postie patch <url>        # PATCH request
-postie head <url>         # HEAD request
-postie options <url>      # OPTIONS request
+# Run interactive demonstration
+./postie demo
+
+# This demo includes:
+# - Basic HTTP requests (GET, POST, PUT, DELETE)
+# - Authentication examples
+# - Error handling demonstrations
+# - Response parsing examples
+# - Collection workflow examples
 ```
 
-### Collection Management
+### Advanced Usage Examples
+
 ```bash
-postie create collection <name>              # Create new collection
-postie create apigroup <file> <name>         # Create API group
-postie create api <file> <group> <name>      # Create API endpoint
-postie update collection <file>              # Update collection
-postie remove apigroup <file> <id>           # Remove API group
-postie list <collection>                     # List all requests
-postie env <collection>                      # Show environments
-postie run <collection>                      # Run collection
+# Chain multiple operations
+./postie create collection "E-commerce API" --file ecommerce.collection.json
+./postie create apigroup ecommerce.collection.json "Products"
+./postie create api ecommerce.collection.json "products-group-id" "List Products" GET "{{baseUrl}}/products"
+./postie run ecommerce.collection.json --env "Development"
+
+# Work with authentication
+./postie post https://api.example.com/auth/login \
+  --header "Content-Type: application/json" \
+  --data '{"username": "admin", "password": "secret"}'
+
+# Test API responses and status codes
+./postie get https://httpbin.org/status/200  # Success
+./postie get https://httpbin.org/status/404  # Not Found
+./postie get https://httpbin.org/status/500  # Server Error
+
+# Test with delays (for timeout testing)
+./postie get https://httpbin.org/delay/2     # 2 second delay
+./postie get https://httpbin.org/delay/5     # 5 second delay
+
+# Complex POST with multiple headers
+./postie post https://api.example.com/users \
+  --header "Content-Type: application/json" \
+  --header "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." \
+  --header "X-API-Version: v2" \
+  --data '{"name": "Alice", "email": "alice@example.com", "role": "admin"}'
 ```
+
+### Collection File Format
+
+Collections are stored as JSON files. Here's the basic structure:
+
+```bash
+# View collection structure
+./postie list collections/jsonplaceholder.collection.json
+
+# The collection includes:
+# - Collection metadata (name, description, version)
+# - Environment variables
+# - API groups and endpoints
+# - Authentication settings
+# - Pre/post request scripts
+```
+
+For detailed collection format documentation, see `docs/collection-format.md`.
 
 ## Architecture
 
@@ -144,35 +395,33 @@ postie/
 
 ## Command Line Interface
 
-### Commands
+Postie provides a comprehensive CLI for API testing and collection management. The tool supports:
+
+- **HTTP Methods**: GET, POST, PUT, DELETE with full header and body support
+- **Collection Management**: Create, update, and organize API collections
+- **Environment Support**: Switch between development, staging, and production environments
+- **Authentication**: Multiple auth methods including Bearer tokens, API keys, and Basic auth
+- **Response Analysis**: Automatic JSON formatting, status checking, and timing metrics
+
+### Common Flags and Options
 
 ```bash
-postie get <url>          # GET request
-postie post <url>         # POST request  
-postie put <url>          # PUT request
-postie delete <url>       # DELETE request
+# Global options available for HTTP requests:
+--header, -H    Add custom headers (can be used multiple times)
+--data, -d      Request body data (JSON, form data, etc.)
+--env, -e       Specify environment for collection runs
+--request, -r   Run specific request by name
+--id           Run specific request by ID
+--file, -f      Specify output file for collection creation
 
-# Collection operations
-postie demo               # Run demonstrations
-postie help               # Show help
-```
+# Examples with flags:
+./postie get https://api.example.com/users \
+  --header "Authorization: Bearer token123" \
+  --header "Content-Type: application/json"
 
-### Examples
-
-```bash
-# Simple GET request
-# GET with custom headers
-./postie get https://httpbin.org/get
-
-# POST with JSON data  
-./postie post https://httpbin.org/post
-
-# Test different response status codes
-./postie get https://httpbin.org/status/404
-./postie get https://httpbin.org/status/200
-
-# Test request timing
-./postie get https://httpbin.org/delay/2
+./postie post https://api.example.com/users \
+  --data '{"name": "John", "email": "john@example.com"}' \
+  --header "Content-Type: application/json"
 ```
 
 ## Development
@@ -288,38 +537,6 @@ The project includes VS Code configuration:
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-### MIT License Summary
-
-```
-MIT License
-
-Copyright (c) 2025 Postie Contributors
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-```
-
-## Project Statistics
-
-![Lines of Code](https://img.shields.io/tokei/lines/github/jainbasil/postie?style=flat-square)
-![Code Size](https://img.shields.io/github/languages/code-size/jainbasil/postie?style=flat-square)
-![Repository Size](https://img.shields.io/github/repo-size/jainbasil/postie?style=flat-square)
-
-## 📈 Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=jainbasil/postie&type=Date)](https://star-history.com/#jainbasil/postie&Date)
 
 ---
 
