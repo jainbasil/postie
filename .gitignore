@@ -1,0 +1,174 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Dependency directories (remove the comment below to include it)
+# vendor/
+
+# Go workspace file
+go.work
+
+# Build output
+/postie
+/postie.exe
+/postie-*
+/build/
+/dist/
+
+# IDE and Editor files
+.vscode/
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.cover
+*.coverprofile
+
+# nyc test coverage
+.nyc_output
+
+# node_modules (if any Node.js tools are used)
+node_modules/
+
+# Environment files
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+*.env
+
+# Configuration files with secrets
+config.json
+config.yaml
+config.yml
+secrets.json
+secrets.yaml
+secrets.yml
+
+# Collection files with sensitive data (optional - uncomment if needed)
+# *.collection.json
+# *.environment.json
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Archives
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Cache files
+.cache/
+*.cache
+
+# Profiling files
+*.prof
+*.pprof
+
+# Memory dumps
+*.dmp
+
+# Core dumps
+core.*
+
+# Go module cache (if using vendor)
+vendor/
+
+# Air live reload tool
+.air.toml
+tmp/
+
+# GoLand
+.idea/
+
+# VSCode workspace files
+*.code-workspace
+
+# Local development files
+local/
+dev/
+debug/
+
+# Documentation build files
+docs/_build/
+docs/.doctrees/
+
+# Backup files
+*.bak
+*.backup
+
+# Testing artifacts
+testdata/output/
+test-results/
+coverage.html
+
+# Release artifacts
+releases/
+packages/
+
+# Docker
+.dockerignore
+Dockerfile.local
+
+# Kubernetes
+*.kubeconfig
+k8s-local/
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+
+# Local scripts
+run-local.sh
+test-local.sh
+build-local.sh

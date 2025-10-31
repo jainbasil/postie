@@ -1,0 +1,29 @@
+{
+  "name": "Production Environment",
+  "values": [
+    {
+      "key": "baseUrl",
+      "value": "https://api.production.com",
+      "enabled": true,
+      "type": "string"
+    },
+    {
+      "key": "timeout",
+      "value": 10000,
+      "enabled": true,
+      "type": "number"
+    },
+    {
+      "key": "apiKey",
+      "value": "prod-api-key-67890",
+      "enabled": true,
+      "type": "string"
+    },
+    {
+      "key": "userAgent",
+      "value": "Postie/1.0.0",
+      "enabled": true,
+      "type": "string"
+    }
+  ]
+}
