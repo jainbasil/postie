@@ -2,37 +2,37 @@
 
 [![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?style=for-the-badge&logo=go)](https://golang.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
-[![Go Report Card](https://goreportcard.com/badge/github.com/yourusername/postie?style=for-the-badge)](https://goreportcard.com/report/github.com/yourusername/postie)
-[![Release](https://img.shields.io/github/v/release/yourusername/postie?style=for-the-badge)](https://github.com/yourusername/postie/releases)
-[![Downloads](https://img.shields.io/github/downloads/yourusername/postie/total?style=for-the-badge)](https://github.com/yourusername/postie/releases)
+[![Go Report Card](https://goreportcard.com/badge/github.com/jainbasil/postie?style=for-the-badge)](https://goreportcard.com/report/github.com/jainbasil/postie)
+[![Release](https://img.shields.io/github/v/release/jainbasil/postie?style=for-the-badge)](https://github.com/jainbasil/postie/releases)
+[![Downloads](https://img.shields.io/github/downloads/jainbasil/postie/total?style=for-the-badge)](https://github.com/jainbasil/postie/releases)
 
 A powerful, native desktop API client built in Go that provides both command-line and programmatic interfaces for testing and debugging APIs, similar to Postman but designed for developers who love the terminal.
 
-## 🌟 Features
+## Features
 
-- 🚀 **Native Performance**: Built in Go for fast, native desktop performance
-- 🔧 **Command-Line Interface**: Full-featured CLI for automation and scripting
-- 🔐 **Multiple Authentication Methods**: API keys, Bearer tokens, Basic auth, and custom headers
-- 🌐 **Full HTTP Support**: GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS
-- 📊 **Response Analysis**: JSON formatting, status checking, response timing
-- 🔄 **Middleware Support**: Extensible middleware for logging, rate limiting, retries
-- 📝 **Request Building**: Fluent API for building complex requests
-- 📁 **Collection Support**: Import/export API collections in standard JSON format
-- ⚡ **Fast & Lightweight**: Single binary with no external dependencies
+- **Native Performance**: Built in Go for fast, native desktop performance
+- **Command- e Interface**: Full- tured CLI for automation and scripting
+- **Multiple Authentication Methods**: API keys, Bearer tokens, Basic auth, and custom headers
+- **Full HTTP Support**: GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS
+- **Response Analysis**: JSON formatting, status checking, response timing
+- **Middleware Support**: Extensible middleware for logging, rate limiting, retries
+- **Request Building**: Fluent API for building complex requests
+- **Collection Support**: Import/export API collections in standard JSON format
+- **Fast & Lightweight**: Single binary with no external dependencies
 
-## 📦 Installation
+## Installation
 
 ### Binary Releases (Recommended)
 
-Download the latest binary for your platform from the [releases page](https://github.com/yourusername/postie/releases):
+Download the latest binary for your platform from the [releases page](https://github.com/jainbasil/postie/releases):
 
 ```bash
 # Linux (x64)
-curl -L https://github.com/yourusername/postie/releases/latest/download/postie-linux-amd64 -o postie
+curl -L https://github.com/jainbasil/postie/releases/latest/download/postie-linux-amd64 -o postie
 chmod +x postie
 
 # macOS (x64)
-curl -L https://github.com/yourusername/postie/releases/latest/download/postie-darwin-amd64 -o postie
+curl -L https://github.com/jainbasil/postie/releases/latest/download/postie-darwin-amd64 -o postie
 chmod +x postie
 
 # Windows (x64)
@@ -42,29 +42,15 @@ chmod +x postie
 ### Using Go Install
 
 ```bash
-go install github.com/yourusername/postie@latest
+go install github.com/jainbasil/postie@latest
 ```
 
 ### Build from Source
 
 ```bash
-git clone https://github.com/yourusername/postie.git
+git clone https://github.com/jainbasil/postie.git
 cd postie
 go build -o postie .
-```
-
-### Package Managers
-
-```bash
-# Homebrew (macOS/Linux)
-brew install yourusername/tap/postie
-
-# Scoop (Windows)
-scoop bucket add yourusername https://github.com/yourusername/scoop-bucket
-scoop install postie
-
-# Arch Linux (AUR)
-yay -S postie-bin
 ```
 
 ## 🚀 Quick Start
@@ -129,51 +115,6 @@ postie env <collection>                      # Show environments
 postie run <collection>                      # Run collection
 ```
 
-### Programmatic Usage
-
-```go
-package main
-
-import (
-    "fmt"
-    "time"
-    "postie/pkg/client"
-    "postie/pkg/auth"
-)
-
-func main() {
-    // Create API client
-    apiClient := client.NewClient(&client.Config{
-        BaseURL: "https://api.example.com",
-        Timeout: 30 * time.Second,
-        Headers: map[string]string{
-            "User-Agent": "MyApp/1.0",
-        },
-    })
-
-    // Make authenticated GET request
-    resp, err := apiClient.GET("/users").
-        Header("Authorization", "Bearer your-token").
-        Param("page", "1").
-        Execute()
-    
-    if err != nil {
-        fmt.Printf("Error: %v\n", err)
-        return
-    }
-    defer resp.Response.Body.Close()
-
-    // Parse JSON response
-    var users []User
-    if err := resp.JSON(&users); err != nil {
-        fmt.Printf("JSON error: %v\n", err)
-        return
-    }
-
-    fmt.Printf("Retrieved %d users\n", len(users))
-}
-```
-
 ## Architecture
 
 ### Project Structure
@@ -200,96 +141,6 @@ postie/
 │   └── collection-format.md
 └── tests/                # Test files
 ```
-
-### Core Components
-
-#### 1. HTTP Client (`pkg/client`)
-
-The core client provides a fluent interface for building and executing HTTP requests:
-
-```go
-// Create client with configuration
-client := client.NewClient(&client.Config{
-    BaseURL: "https://api.example.com",
-    Timeout: 30 * time.Second,
-    Middleware: []client.Middleware{
-        middleware.LoggingMiddleware,
-    },
-})
-
-// Build and execute request
-response, err := client.POST("/api/users").
-    Header("Content-Type", "application/json").
-    JSON(userData).
-    Execute()
-```
-
-#### 2. Authentication (`pkg/auth`)
-
-Multiple authentication methods are supported:
-
-```go
-// API Key in header
-apiKey := auth.NewAPIKeyAuth("X-API-Key", "your-key", "header")
-
-// Bearer token
-bearer := auth.NewBearerTokenAuth("your-jwt-token")
-
-// Basic authentication
-basic := auth.NewBasicAuth("username", "password")
-
-// Custom header
-custom := auth.NewCustomHeaderAuth("X-Custom-Auth", "value")
-```
-
-#### 3. Middleware (`pkg/middleware`)
-
-Extensible middleware system for cross-cutting concerns:
-
-```go
-// Built-in middleware
-middleware.LoggingMiddleware          // Request/response logging
-middleware.UserAgentMiddleware("...")  // Custom User-Agent
-middleware.ErrorHandlingMiddleware    // Error handling
-middleware.NewRateLimitMiddleware(5.0) // Rate limiting
-```
-
-## API Reference
-
-### Client Methods
-
-- `GET(url)` - Create GET request
-- `POST(url)` - Create POST request  
-- `PUT(url)` - Create PUT request
-- `DELETE(url)` - Create DELETE request
-- `PATCH(url)` - Create PATCH request
-- `HEAD(url)` - Create HEAD request
-- `OPTIONS(url)` - Create OPTIONS request
-
-### Request Builder
-
-- `Header(key, value)` - Set request header
-- `Headers(map[string]string)` - Set multiple headers
-- `Param(key, value)` - Set URL parameter
-- `Params(map[string]string)` - Set multiple parameters
-- `JSON(data)` - Set JSON body
-- `Text(string)` - Set text body
-- `Form(map[string]string)` - Set form data
-- `Body(io.Reader)` - Set raw body
-- `Context(context.Context)` - Set request context
-- `Execute()` - Send the request
-
-### Response Methods
-
-- `GetBody()` - Get response body as bytes
-- `Text()` - Get response body as string
-- `JSON(interface{})` - Unmarshal JSON response
-- `IsSuccess()` - Check if status 2xx
-- `IsError()` - Check if status 4xx/5xx
-- `IsClientError()` - Check if status 4xx
-- `IsServerError()` - Check if status 5xx
-- `Size()` - Get response size in bytes
-- `ContentType()` - Get Content-Type header
 
 ## Command Line Interface
 
@@ -322,58 +173,6 @@ postie help               # Show help
 
 # Test request timing
 ./postie get https://httpbin.org/delay/2
-```
-
-## Advanced Usage
-
-### Custom Middleware
-
-```go
-// Create custom middleware
-func CustomMiddleware(req *http.Request, resp *http.Response) error {
-    // Add custom logic here
-    fmt.Printf("Custom processing for %s\n", req.URL)
-    return nil
-}
-
-// Use in client
-client := client.NewClient(&client.Config{
-    Middleware: []client.Middleware{
-        CustomMiddleware,
-        middleware.LoggingMiddleware,
-    },
-})
-```
-
-### Error Handling
-
-```go
-resp, err := client.GET("/api/data").Execute()
-if err != nil {
-    fmt.Printf("Request failed: %v\n", err)
-    return
-}
-
-if resp.IsError() {
-    fmt.Printf("HTTP Error: %s\n", resp.Status)
-    if resp.IsClientError() {
-        // Handle 4xx errors
-    }
-    if resp.IsServerError() {
-        // Handle 5xx errors  
-    }
-}
-```
-
-### Timeouts and Context
-
-```go
-ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-defer cancel()
-
-resp, err := client.GET("/slow-endpoint").
-    Context(ctx).
-    Execute()
 ```
 
 ## Development
@@ -417,7 +216,7 @@ We love contributions! Please read our [Contributing Guide](CONTRIBUTING.md) to 
 
 1. **Fork the repository**
    ```bash
-   git clone https://github.com/yourusername/postie.git
+   git clone https://github.com/jainbasil/postie.git
    cd postie
    ```
 
@@ -451,7 +250,7 @@ We love contributions! Please read our [Contributing Guide](CONTRIBUTING.md) to 
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/postie.git
+git clone https://github.com/jainbasil/postie.git
 cd postie
 
 # Install dependencies
@@ -552,39 +351,13 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
 
 ## 📊 Project Statistics
 
-![Lines of Code](https://img.shields.io/tokei/lines/github/yourusername/postie?style=flat-square)
-![Code Size](https://img.shields.io/github/languages/code-size/yourusername/postie?style=flat-square)
-![Repository Size](https://img.shields.io/github/repo-size/yourusername/postie?style=flat-square)
-
-## 🆘 Support & Community
-
-### Getting Help
-
-- � **Documentation**: [docs.postie.dev](https://docs.postie.dev)
-- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/yourusername/postie/issues)
-- 💬 **Discussions**: [GitHub Discussions](https://github.com/yourusername/postie/discussions)
-- 💭 **Feature Requests**: [GitHub Issues](https://github.com/yourusername/postie/issues/new?template=feature_request.md)
-
-### Community
-
-- 🌟 **Star us on GitHub** if you find Postie useful!
-- 🐦 **Follow updates**: [@PostieAPI](https://twitter.com/PostieAPI)
-- 📧 **Email**: support@postie.dev
-- 💼 **LinkedIn**: [Postie API Tool](https://linkedin.com/company/postie-api)
-
-### Security
-
-If you discover a security vulnerability, please send an email to security@postie.dev. All security vulnerabilities will be promptly addressed.
-
-## 🙏 Acknowledgments
-
-- Inspired by [Postman](https://postman.com) for API testing workflows
-- Built with the amazing [Go](https://golang.org) programming language
-- Thanks to all [contributors](https://github.com/yourusername/postie/contributors) who make this project possible!
+![Lines of Code](https://img.shields.io/tokei/lines/github/jainbasil/postie?style=flat-square)
+![Code Size](https://img.shields.io/github/languages/code-size/jainbasil/postie?style=flat-square)
+![Repository Size](https://img.shields.io/github/repo-size/jainbasil/postie?style=flat-square)
 
 ## 📈 Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=yourusername/postie&type=Date)](https://star-history.com/#yourusername/postie&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=jainbasil/postie&type=Date)](https://star-history.com/#jainbasil/postie&Date)
 
 ---
 
