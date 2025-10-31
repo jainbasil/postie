@@ -53,7 +53,7 @@ func contextSetCommand() *cli.Command {
 				if err := ctx.SetCollection(absPath); err != nil {
 					return fmt.Errorf("error setting collection: %w", err)
 				}
-				fmt.Printf("✅ Collection set to: %s\n", absPath)
+				fmt.Printf("Collection set to: %s\n", absPath)
 			}
 
 			// Update environment if provided
@@ -69,10 +69,8 @@ func contextSetCommand() *cli.Command {
 					}
 				}
 				ctx.SetEnvironment(environment)
-				fmt.Printf("✅ Environment set to: %s\n", environment)
-			}
-
-			// Save context
+				fmt.Printf("Environment set to: %s\n", environment)
+			} // Save context
 			if err := ctx.Save(); err != nil {
 				return fmt.Errorf("error saving context: %w", err)
 			}
@@ -176,7 +174,7 @@ func contextClearCommand() *cli.Command {
 				return fmt.Errorf("error clearing context: %w", err)
 			}
 
-			fmt.Println("✅ Context cleared successfully")
+			fmt.Println("Context cleared successfully")
 
 			return nil
 		},

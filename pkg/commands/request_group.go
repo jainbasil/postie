@@ -94,9 +94,9 @@ func requestGroupCreateCommand() *cli.Command {
 				return fmt.Errorf("error writing file: %w", err)
 			}
 
-			fmt.Printf("✅ Request Group '%s' created successfully\n", name)
-			fmt.Printf("🆔 ID: %s\n", id)
-			fmt.Printf("📁 Collection: %s\n", file)
+			fmt.Printf("Request Group updated successfully\n")
+			fmt.Printf("ID: %s\n", id)
+			fmt.Printf("Collection: %s\n", file)
 
 			return nil
 		},
@@ -170,9 +170,9 @@ func requestGroupUpdateCommand() *cli.Command {
 				return fmt.Errorf("error writing file: %w", err)
 			}
 
-			fmt.Printf("✅ Request Group updated successfully\n")
-			fmt.Printf("🆔 ID: %s\n", id)
-			fmt.Printf("📁 Collection: %s\n", file)
+			fmt.Printf("Request Group updated successfully\n")
+			fmt.Printf("ID: %s\n", id)
+			fmt.Printf("Collection: %s\n", file)
 
 			return nil
 		},
@@ -314,7 +314,7 @@ func requestGroupDeleteCommand() *cli.Command {
 				return fmt.Errorf("error writing file: %w", err)
 			}
 
-			fmt.Printf("✅ Request Group '%s' deleted successfully\n", groupName)
+			fmt.Printf("Request Group '%s' deleted successfully\n", groupName)
 
 			return nil
 		},

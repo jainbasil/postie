@@ -240,9 +240,9 @@ func printHTTPResponse(resp *client.Response) {
 	fmt.Println(separator)
 
 	if resp.IsSuccess() {
-		fmt.Println("✅ Request successful")
+		fmt.Println("Request successful")
 	} else if resp.IsError() {
-		fmt.Printf("❌ Request failed: %s\n", resp.Status)
+		fmt.Printf("Request failed: %s\n", resp.Status)
 	}
 
 	// Try to format JSON response

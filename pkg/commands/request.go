@@ -133,10 +133,10 @@ func requestCreateCommand() *cli.Command {
 				return fmt.Errorf("error writing file: %w", err)
 			}
 
-			fmt.Printf("✅ Request '%s' created successfully\n", name)
-			fmt.Printf("🆔 ID: %s\n", id)
-			fmt.Printf("🔗 %s %s\n", method, url)
-			fmt.Printf("📁 Collection: %s\n", file)
+			fmt.Printf("Request '%s' created successfully\n", name)
+			fmt.Printf("ID: %s\n", id)
+			fmt.Printf("%s %s\n", method, url)
+			fmt.Printf("Collection: %s\n", file)
 
 			return nil
 		},
@@ -236,9 +236,9 @@ func requestUpdateCommand() *cli.Command {
 				return fmt.Errorf("error writing file: %w", err)
 			}
 
-			fmt.Printf("✅ Request updated successfully\n")
-			fmt.Printf("🆔 ID: %s\n", id)
-			fmt.Printf("📁 Collection: %s\n", file)
+			fmt.Printf("Request updated successfully\n")
+			fmt.Printf("ID: %s\n", id)
+			fmt.Printf("Collection: %s\n", file)
 
 			return nil
 		},
@@ -492,7 +492,7 @@ func requestDeleteCommand() *cli.Command {
 				return fmt.Errorf("error writing file: %w", err)
 			}
 
-			fmt.Printf("✅ Request '%s' deleted successfully\n", requestName)
+			fmt.Printf("Request '%s' deleted successfully\n", requestName)
 
 			return nil
 		},

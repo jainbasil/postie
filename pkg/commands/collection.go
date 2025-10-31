@@ -86,8 +86,8 @@ func collectionCreateCommand() *cli.Command {
 				return fmt.Errorf("error writing file: %w", err)
 			}
 
-			fmt.Printf("✅ Collection '%s' created successfully\n", name)
-			fmt.Printf("📁 File: %s\n", file)
+			fmt.Printf("Collection '%s' created successfully\n", name)
+			fmt.Printf("File: %s\n", file)
 
 			// Set context if requested
 			if setContext {
@@ -95,9 +95,9 @@ func collectionCreateCommand() *cli.Command {
 				absPath, _ := filepath.Abs(file)
 				ctx.SetCollection(absPath)
 				if err := ctx.Save(); err != nil {
-					fmt.Printf("⚠️  Warning: Could not set context: %v\n", err)
+					fmt.Printf("Warning: Could not set context: %v\n", err)
 				} else {
-					fmt.Printf("📌 Collection set as current context\n")
+					fmt.Printf("Collection set as current context\n")
 				}
 			}
 
@@ -163,9 +163,9 @@ func collectionUpdateCommand() *cli.Command {
 				return fmt.Errorf("error writing file: %w", err)
 			}
 
-			fmt.Printf("✅ Collection updated successfully\n")
-			fmt.Printf("📁 File: %s\n", file)
-			fmt.Printf("📝 Name: %s\n", coll.Collection.Info.Name)
+			fmt.Printf("Collection updated successfully\n")
+			fmt.Printf("File: %s\n", file)
+			fmt.Printf("Name: %s\n", coll.Collection.Info.Name)
 
 			// Set context if requested
 			if setContext {
@@ -173,9 +173,9 @@ func collectionUpdateCommand() *cli.Command {
 				absPath, _ := filepath.Abs(file)
 				ctx.SetCollection(absPath)
 				if err := ctx.Save(); err != nil {
-					fmt.Printf("⚠️  Warning: Could not set context: %v\n", err)
+					fmt.Printf("Warning: Could not set context: %v\n", err)
 				} else {
-					fmt.Printf("📌 Collection set as current context\n")
+					fmt.Printf("Collection set as current context\n")
 				}
 			}
 
@@ -355,7 +355,7 @@ func collectionDeleteCommand() *cli.Command {
 				return fmt.Errorf("error deleting file: %w", err)
 			}
 
-			fmt.Printf("✅ Collection deleted: %s\n", file)
+			fmt.Printf("Collection deleted: %s\n", file)
 
 			return nil
 		},

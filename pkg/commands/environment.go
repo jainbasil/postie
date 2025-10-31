@@ -91,17 +91,17 @@ func environmentCreateCommand() *cli.Command {
 				return fmt.Errorf("error writing file: %w", err)
 			}
 
-			fmt.Printf("✅ Environment '%s' created successfully\n", name)
-			fmt.Printf("📁 Collection: %s\n", file)
+			fmt.Printf("Environment '%s' created successfully\n", name)
+			fmt.Printf("Collection: %s\n", file)
 
 			// Set context if requested
 			if setContext {
 				ctx, _ := context.Load()
 				ctx.SetEnvironment(name)
 				if err := ctx.Save(); err != nil {
-					fmt.Printf("⚠️  Warning: Could not set context: %v\n", err)
+					fmt.Printf("Warning: Could not set context: %v\n", err)
 				} else {
-					fmt.Printf("📌 Environment set as current context\n")
+					fmt.Printf("Environment set as current context\n")
 				}
 			}
 
@@ -175,17 +175,17 @@ func environmentUpdateCommand() *cli.Command {
 				return fmt.Errorf("error writing file: %w", err)
 			}
 
-			fmt.Printf("✅ Environment '%s' updated successfully\n", name)
-			fmt.Printf("📁 Collection: %s\n", file)
+			fmt.Printf("Environment '%s' updated successfully\n", name)
+			fmt.Printf("Collection: %s\n", file)
 
 			// Set context if requested
 			if setContext {
 				ctx, _ := context.Load()
 				ctx.SetEnvironment(name)
 				if err := ctx.Save(); err != nil {
-					fmt.Printf("⚠️  Warning: Could not set context: %v\n", err)
+					fmt.Printf("Warning: Could not set context: %v\n", err)
 				} else {
-					fmt.Printf("📌 Environment set as current context\n")
+					fmt.Printf("Environment set as current context\n")
 				}
 			}
 
@@ -309,7 +309,7 @@ func environmentDeleteCommand() *cli.Command {
 				return fmt.Errorf("error writing file: %w", err)
 			}
 
-			fmt.Printf("✅ Environment '%s' deleted successfully\n", name)
+			fmt.Printf("Environment '%s' deleted successfully\n", name)
 
 			return nil
 		},
@@ -411,7 +411,7 @@ func envVariableSetCommand() *cli.Command {
 				return fmt.Errorf("error writing file: %w", err)
 			}
 
-			fmt.Printf("✅ Variable '%s' set in environment '%s'\n", key, name)
+			fmt.Printf("Variable '%s' set in environment '%s'\n", key, name)
 			if !secret {
 				fmt.Printf("   Value: %s\n", value)
 			}
@@ -472,9 +472,9 @@ func envVariableGetCommand() *cli.Command {
 						// List all variables (same as list command)
 						fmt.Printf("Variables in environment '%s':\n\n", name)
 						for _, v := range env.Values {
-							enabledMark := "✓"
+							enabledMark := "enabled"
 							if !v.Enabled {
-								enabledMark = "✗"
+								enabledMark = "disabled"
 							}
 							fmt.Printf("%s %s = %s\n", enabledMark, v.Key, v.Value)
 						}
