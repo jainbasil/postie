@@ -149,7 +149,37 @@ Execute your collection with different environments:
 ./postie run blog-api.collection.json --id "user-123"
 ```
 
-### 7. Update and Manage APIs
+### 7. Set Default Collection Context
+
+Save time by setting a default collection and environment - no need to type the collection path every time:
+
+```bash
+# Set your collection as the default context
+./postie context set --collection blog-api.collection.json --env "Development"
+
+# Now run commands without specifying the collection
+./postie list              # Uses blog-api.collection.json
+./postie env               # Shows environments from blog-api.collection.json
+./postie run               # Runs the collection with Development environment
+
+# Override the environment when needed
+./postie run --env "Production"
+./postie list --env "Staging"
+
+# View current context
+./postie context show
+
+# Clear context when done
+./postie context clear
+```
+
+**Context Benefits:**
+- Set once, use everywhere - no need to type collection paths repeatedly
+- Perfect for working on a single project
+- Similar to `kubectl config` or `az account set` in other CLI tools
+- Context is stored in `~/.postie/context.json`
+
+### 8. Update and Manage APIs
 
 Modify your APIs as they evolve:
 
@@ -168,7 +198,7 @@ Modify your APIs as they evolve:
 ./postie remove apigroup blog-api.collection.json "deprecated-group-id"
 ```
 
-### 8. Explore Examples
+### 9. Explore Examples
 
 Try the included examples to learn advanced features:
 
@@ -187,9 +217,12 @@ Try the included examples to learn advanced features:
 ### Pro Tips
 
 - Use `{{baseUrl}}` and other variables in your URLs for environment flexibility
+- **Set context once** with `./postie context set` to avoid typing collection paths
+- Context works like `kubectl config` or `az account set` - set it and forget it
 - Start with the demo to understand all features: `./postie demo`
 - Use `--help` with any command for detailed usage: `./postie create --help`
 - Collections are JSON files - you can edit them directly if needed
+- Override context environment anytime with `--env` flag
 
 ## Commands
 
@@ -293,15 +326,52 @@ Execute HTTP requests directly from the command line:
 ./postie list collections/jsonplaceholder.collection.json
 ./postie list blog-api.collection.json --env "Development"
 
+# List using context (no collection file needed)
+./postie list
+./postie list --env "Production"
+
 # Show environments in a collection
 ./postie env collections/jsonplaceholder.collection.json
 ./postie env blog-api.collection.json
+
+# Show environments using context
+./postie env
 
 # Show help for any command
 ./postie help
 ./postie --help
 ./postie -h
 ```
+
+### Context Management Commands
+
+Set default collection and environment to avoid typing collection paths repeatedly:
+
+```bash
+# Set default collection and environment
+./postie context set --collection blog-api.collection.json --env "Development"
+./postie context set --collection collections/jsonplaceholder.collection.json --env "Production"
+
+# Set only collection (use default environment)
+./postie context set --collection blog-api.collection.json
+
+# Set only environment (keep existing collection)
+./postie context set --env "Staging"
+
+# View current context
+./postie context show
+
+# Clear all context settings
+./postie context clear
+
+# After setting context, run commands without specifying collection:
+./postie run                    # Uses context collection and environment
+./postie list                   # Uses context collection
+./postie env                    # Uses context collection
+./postie run --env "Testing"    # Override context environment
+```
+
+**Context is stored in:** `~/.postie/context.json`
 
 ### Demo and Learning Commands
 
