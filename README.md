@@ -53,7 +53,7 @@ cd postie
 go build -o postie .
 ```
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Basic Usage
 
@@ -208,7 +208,7 @@ The project includes VS Code tasks for development:
 
 - **Build Postie**: `Ctrl+Shift+P` → "Tasks: Run Task" → "Build Postie"
 
-## 🤝 Contributing
+## Contributing
 
 We love contributions! Please read our [Contributing Guide](CONTRIBUTING.md) to get started.
 
@@ -311,45 +311,7 @@ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
 ```
 
-## 🗺️ Roadmap
-
-### Current Version (v1.0.0)
-- ✅ Full HTTP method support (GET, POST, PUT, DELETE, etc.)
-- ✅ Multiple authentication methods  
-- ✅ JSON collection format
-- ✅ Environment variable support
-- ✅ Command-line interface
-- ✅ Middleware system
-
-### Upcoming Features
-
-#### v1.1.0 - Enhanced Collections
-- [ ] Collection import/export from Postman
-- [ ] Environment switching improvements
-- [ ] Request templates
-- [ ] Response caching
-
-#### v1.2.0 - Advanced Features  
-- [ ] WebSocket support
-- [ ] GraphQL query support
-- [ ] Request history
-- [ ] Performance benchmarking
-- [ ] Response assertions
-
-#### v2.0.0 - Desktop GUI
-- [ ] Cross-platform desktop GUI using Fyne
-- [ ] Visual request builder
-- [ ] Response visualization
-- [ ] Interactive collection management
-
-#### Future Considerations
-- [ ] Plugin system for extensibility
-- [ ] Team collaboration features
-- [ ] API documentation generation
-- [ ] Mock server capabilities
-- [ ] CI/CD integrations
-
-## 📊 Project Statistics
+## Project Statistics
 
 ![Lines of Code](https://img.shields.io/tokei/lines/github/jainbasil/postie?style=flat-square)
 ![Code Size](https://img.shields.io/github/languages/code-size/jainbasil/postie?style=flat-square)
