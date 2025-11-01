@@ -109,7 +109,7 @@ func (c *CLI) PrintUsage() {
 	fmt.Println("Resources:")
 
 	// Print commands in order
-	commandOrder := []string{"http", "demo", "version", "help"}
+	commandOrder := []string{"http", "env", "demo", "version", "help"}
 	for _, name := range commandOrder {
 		if cmd, ok := c.Commands[name]; ok {
 			fmt.Printf("  %-15s %s\n", name, cmd.Description)
@@ -121,9 +121,9 @@ func (c *CLI) PrintUsage() {
 	fmt.Println("  --version, -v   Show version information")
 	fmt.Println("\nExamples:")
 	fmt.Printf("  %s http run requests.http --env production\n", c.Name)
-	fmt.Printf("  %s http parse requests.http --format json\n", c.Name)
-	fmt.Printf("  %s http list --recursive\n", c.Name)
-	fmt.Printf("  %s http run requests.http --request \"Get Users\" --verbose\n", c.Name)
+	fmt.Printf("  %s env list\n", c.Name)
+	fmt.Printf("  %s env show development\n", c.Name)
+	fmt.Printf("  %s http run requests.http --save-responses\n", c.Name)
 	fmt.Printf("\nRun '%s <resource> help' for more information on a resource.\n", c.Name)
 }
 

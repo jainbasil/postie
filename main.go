@@ -19,6 +19,7 @@ func main() {
 
 	// Add commands
 	app.AddCommand(commands.HTTPCommands())
+	app.AddCommand(commands.EnvCommands())
 	app.AddCommand(demoCommand())
 
 	// Run CLI
