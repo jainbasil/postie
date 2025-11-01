@@ -36,15 +36,16 @@ func httpRunCommand() *cli.Command {
 			}
 
 			var env, envFile, privateEnvFile, requestFilter string
-			var verbose bool
+			var verbose, saveResponses bool
 
 			envFlag := &cli.StringFlag{Name: "env", ShortName: "e", Value: env, Usage: "Environment to use", Required: false}
 			envFileFlag := &cli.StringFlag{Name: "env-file", Value: envFile, Usage: "Path to environment file", Required: false}
 			privateEnvFileFlag := &cli.StringFlag{Name: "private-env-file", Value: privateEnvFile, Usage: "Path to private environment file", Required: false}
 			requestFlag := &cli.StringFlag{Name: "request", ShortName: "r", Value: requestFilter, Usage: "Specific request name or number to run", Required: false}
 			verboseFlag := &cli.BoolFlag{Name: "verbose", ShortName: "v", Value: verbose, Usage: "Verbose output"}
+			saveResponsesFlag := &cli.BoolFlag{Name: "save-responses", ShortName: "s", Value: saveResponses, Usage: "Save responses to files"}
 
-			_, err := cli.ParseFlags(args[1:], []*cli.StringFlag{envFlag, envFileFlag, privateEnvFileFlag, requestFlag}, []*cli.BoolFlag{verboseFlag})
+			_, err := cli.ParseFlags(args[1:], []*cli.StringFlag{envFlag, envFileFlag, privateEnvFileFlag, requestFlag}, []*cli.BoolFlag{verboseFlag, saveResponsesFlag})
 			if err != nil {
 				return err
 			}
@@ -63,8 +64,9 @@ func httpRunCommand() *cli.Command {
 			}
 			requestFilter = requestFlag.Value
 			verbose = verboseFlag.Value
+			saveResponses = saveResponsesFlag.Value
 
-			return executeHttpFileRun(args[0], env, envFile, privateEnvFile, requestFilter, verbose)
+			return executeHttpFileRun(args[0], env, envFile, privateEnvFile, requestFilter, verbose, saveResponses)
 		},
 	}
 }
@@ -131,7 +133,7 @@ func httpListCommand() *cli.Command {
 
 // Execute functions
 
-func executeHttpFileRun(filePath string, envName string, envFile string, privateEnvFile string, requestName string, verbose bool) error {
+func executeHttpFileRun(filePath string, envName string, envFile string, privateEnvFile string, requestName string, verbose bool, saveResponses bool) error {
 	// Load environment files
 	resolvedEnv, err := loadEnvironmentFiles(envName, envFile, privateEnvFile)
 	if err != nil {
@@ -151,7 +153,10 @@ func executeHttpFileRun(filePath string, envName string, envFile string, private
 	}
 
 	// Create executor
-	exec := executor.NewExecutor(resolvedEnv, nil)
+	execConfig := &executor.ExecutorConfig{
+		SaveResponses: saveResponses,
+	}
+	exec := executor.NewExecutor(resolvedEnv, execConfig)
 	formatter := executor.NewFormatter(verbose)
 
 	// Execute requests from file

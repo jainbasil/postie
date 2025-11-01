@@ -7,39 +7,52 @@ import (
 	"postie/pkg/client"
 	"postie/pkg/environment"
 	"postie/pkg/httprequest"
+	"postie/pkg/responses"
 	"postie/pkg/scripting"
 )
 
 // Executor executes HTTP requests with environment variable resolution
 type Executor struct {
-	client      *client.APIClient
-	environment *environment.ResolvedEnvironment
-	verbose     bool
-	globals     *scripting.GlobalStore // Global variables for response handlers
+	client          *client.APIClient
+	environment     *environment.ResolvedEnvironment
+	verbose         bool
+	globals         *scripting.GlobalStore     // Global variables for response handlers
+	responseStorage *responses.Storage         // Response storage
+	saveResponses   bool                       // Whether to save responses
 }
 
 // ExecutorConfig holds configuration for the executor
 type ExecutorConfig struct {
-	Timeout time.Duration
-	Verbose bool
+	Timeout       time.Duration
+	Verbose       bool
+	SaveResponses bool                   // Enable response saving
+	StorageConfig *responses.StorageConfig // Response storage configuration
 }
 
 // NewExecutor creates a new request executor
 func NewExecutor(env *environment.ResolvedEnvironment, config *ExecutorConfig) *Executor {
 	if config == nil {
 		config = &ExecutorConfig{
-			Timeout: 30 * time.Second,
-			Verbose: false,
+			Timeout:       30 * time.Second,
+			Verbose:       false,
+			SaveResponses: false,
 		}
+	}
+
+	var storage *responses.Storage
+	if config.SaveResponses {
+		storage = responses.NewStorage(config.StorageConfig)
 	}
 
 	return &Executor{
 		client: client.NewClient(&client.Config{
 			Timeout: config.Timeout,
 		}),
-		environment: env,
-		verbose:     config.Verbose,
-		globals:     scripting.NewGlobalStore(),
+		environment:     env,
+		verbose:         config.Verbose,
+		globals:         scripting.NewGlobalStore(),
+		responseStorage: storage,
+		saveResponses:   config.SaveResponses,
 	}
 }
 
@@ -99,6 +112,18 @@ func (e *Executor) ExecuteRequest(request *httprequest.Request) (*ExecutionResul
 		)
 
 		result.ScriptResult = scriptResult
+	}
+
+	// Save response if enabled
+	if e.saveResponses && e.responseStorage != nil {
+		storedResponse, err := responses.FromClientResponse(resp, expandedRequest, duration)
+		if err == nil {
+			filePath, err := e.responseStorage.Save(storedResponse)
+			if err == nil {
+				result.ResponseFilePath = filePath
+			}
+			// Don't fail the request if save fails, just skip
+		}
 	}
 
 	return result, nil

@@ -30,6 +30,9 @@ type ExecutionResult struct {
 
 	// ScriptResult contains the results of response handler script execution
 	ScriptResult *scripting.ScriptExecutionResult
+
+	// ResponseFilePath is the path where the response was saved (if enabled)
+	ResponseFilePath string
 }
 
 // IsSuccess returns true if the request was successful (2xx status code)

@@ -73,6 +73,12 @@ node_modules/
 .env.production
 *.env
 
+# Private environment files with sensitive data
+http-client.private.env.json
+
+# HTTP response storage
+.http-responses/
+
 # Configuration files with secrets
 config.json
 config.yaml

@@ -55,6 +55,11 @@ func (f *Formatter) FormatResult(result *ExecutionResult, index int) string {
 		output.WriteString(f.formatScriptResults(result.ScriptResult))
 	}
 
+	// Response file path (if saved)
+	if result.ResponseFilePath != "" {
+		output.WriteString(fmt.Sprintf("\nResponse saved to: %s\n", result.ResponseFilePath))
+	}
+
 	return output.String()
 }
 
