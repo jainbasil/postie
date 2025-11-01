@@ -9,12 +9,12 @@ import (
 
 // Context represents the saved context configuration for a directory
 type Context struct {
-	HTTPFile           string `json:"httpFile,omitempty"`
-	Environment        string `json:"environment,omitempty"`
-	EnvFile            string `json:"envFile,omitempty"`
-	PrivateEnvFile     string `json:"privateEnvFile,omitempty"`
-	SaveResponses      bool   `json:"saveResponses,omitempty"`
-	ResponsesDir       string `json:"responsesDir,omitempty"`
+	HTTPFile       string `json:"httpFile,omitempty"`
+	Environment    string `json:"environment,omitempty"`
+	EnvFile        string `json:"envFile,omitempty"`
+	PrivateEnvFile string `json:"privateEnvFile,omitempty"`
+	SaveResponses  bool   `json:"saveResponses,omitempty"`
+	ResponsesDir   string `json:"responsesDir,omitempty"`
 }
 
 // Manager handles reading and writing context files

@@ -16,16 +16,16 @@ type Executor struct {
 	client          *client.APIClient
 	environment     *environment.ResolvedEnvironment
 	verbose         bool
-	globals         *scripting.GlobalStore     // Global variables for response handlers
-	responseStorage *responses.Storage         // Response storage
-	saveResponses   bool                       // Whether to save responses
+	globals         *scripting.GlobalStore // Global variables for response handlers
+	responseStorage *responses.Storage     // Response storage
+	saveResponses   bool                   // Whether to save responses
 }
 
 // ExecutorConfig holds configuration for the executor
 type ExecutorConfig struct {
 	Timeout       time.Duration
 	Verbose       bool
-	SaveResponses bool                   // Enable response saving
+	SaveResponses bool                     // Enable response saving
 	StorageConfig *responses.StorageConfig // Response storage configuration
 }
 

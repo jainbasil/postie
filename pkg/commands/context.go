@@ -160,8 +160,8 @@ func executeContextShow(args []string) error {
 		fmt.Printf("Responses Dir:     %s\n", ctx.ResponsesDir)
 	}
 
-	if ctx.HTTPFile == "" && ctx.Environment == "" && ctx.EnvFile == "" && 
-	   ctx.PrivateEnvFile == "" && !ctx.SaveResponses && ctx.ResponsesDir == "" {
+	if ctx.HTTPFile == "" && ctx.Environment == "" && ctx.EnvFile == "" &&
+		ctx.PrivateEnvFile == "" && !ctx.SaveResponses && ctx.ResponsesDir == "" {
 		fmt.Println("Context is empty.")
 	}
 

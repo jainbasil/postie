@@ -144,7 +144,7 @@ func (s *Storage) GetHistory(requestName string) (*ResponseHistory, error) {
 		}
 
 		filePath := filepath.Join(dir, entry.Name())
-		
+
 		// Load response to get metadata
 		response, err := s.Load(filePath)
 		if err != nil {

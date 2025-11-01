@@ -42,7 +42,7 @@ func httpRunCommand() *cli.Command {
 			// Determine HTTP file - from args or context
 			var httpFile string
 			var parseArgs []string
-			
+
 			// Check if first arg is a flag or a file
 			if len(args) > 0 && !strings.HasPrefix(args[0], "-") {
 				// First arg is the HTTP file

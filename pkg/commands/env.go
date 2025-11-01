@@ -256,7 +256,7 @@ func displayVariables(vars environment.Environment) {
 	// Display each variable
 	for _, key := range keys {
 		value := vars[key]
-		
+
 		// Format value based on type
 		var valueStr string
 		switch v := value.(type) {

@@ -49,9 +49,9 @@ func DefaultStorageConfig() *StorageConfig {
 
 // ResponseHistory represents the history of responses for a request
 type ResponseHistory struct {
-	RequestName string           `json:"request_name"`
-	RequestURL  string           `json:"request_url"`
-	Responses   []HistoryEntry   `json:"responses"`
+	RequestName string         `json:"request_name"`
+	RequestURL  string         `json:"request_url"`
+	Responses   []HistoryEntry `json:"responses"`
 }
 
 // HistoryEntry represents a single entry in response history
