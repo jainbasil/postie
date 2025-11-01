@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+
+	"postie/pkg/scripting"
 )
 
 // Formatter handles formatting and display of execution results
@@ -46,6 +48,11 @@ func (f *Formatter) FormatResult(result *ExecutionResult, index int) string {
 	// Error (if any)
 	if result.Error != nil {
 		output.WriteString(f.formatError(result))
+	}
+
+	// Script results (if any)
+	if result.ScriptResult != nil {
+		output.WriteString(f.formatScriptResults(result.ScriptResult))
 	}
 
 	return output.String()
@@ -185,6 +192,65 @@ func (f *Formatter) looksLikeJSON(text string) bool {
 // formatError formats error information
 func (f *Formatter) formatError(result *ExecutionResult) string {
 	return fmt.Sprintf("\n✗ Error: %v\n", result.Error)
+}
+
+// formatScriptResults formats response handler script execution results
+func (f *Formatter) formatScriptResults(scriptResult *scripting.ScriptExecutionResult) string {
+	var output strings.Builder
+
+	if scriptResult == nil {
+		return ""
+	}
+
+	output.WriteString("\nResponse Handler Results:\n")
+
+	// Format script execution error
+	if scriptResult.Error != nil {
+		output.WriteString(fmt.Sprintf("  ✗ Script Error: %v\n", scriptResult.Error))
+		return output.String()
+	}
+
+	// Format test results
+	if len(scriptResult.Tests) > 0 {
+		output.WriteString("\n  Tests:\n")
+		for _, test := range scriptResult.Tests {
+			icon := "✓"
+			if !test.Passed {
+				icon = "✗"
+			}
+			output.WriteString(fmt.Sprintf("    %s %s", icon, test.Name))
+			if !test.Passed && test.Error != "" {
+				output.WriteString(fmt.Sprintf(" - %s", test.Error))
+			}
+			output.WriteString("\n")
+		}
+	}
+
+	// Format failed assertions
+	if len(scriptResult.Assertions) > 0 {
+		output.WriteString("\n  Assertions:\n")
+		for _, assertion := range scriptResult.Assertions {
+			output.WriteString(fmt.Sprintf("    ✗ %s\n", assertion.Message))
+		}
+	}
+
+	// Format logs
+	if len(scriptResult.Logs) > 0 {
+		output.WriteString("\n  Logs:\n")
+		for _, log := range scriptResult.Logs {
+			output.WriteString(fmt.Sprintf("    %s\n", log))
+		}
+	}
+
+	// Format globals (if verbose)
+	if f.verbose && len(scriptResult.Globals) > 0 {
+		output.WriteString("\n  Global Variables Set:\n")
+		for name, value := range scriptResult.Globals {
+			output.WriteString(fmt.Sprintf("    %s = %v\n", name, value))
+		}
+	}
+
+	return output.String()
 }
 
 // FormatSummary formats a summary of multiple results

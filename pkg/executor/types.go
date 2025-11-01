@@ -5,6 +5,7 @@ import (
 
 	"postie/pkg/client"
 	"postie/pkg/httprequest"
+	"postie/pkg/scripting"
 )
 
 // ExecutionResult contains the result of executing an HTTP request
@@ -26,6 +27,9 @@ type ExecutionResult struct {
 
 	// Status is the HTTP status text
 	Status string
+
+	// ScriptResult contains the results of response handler script execution
+	ScriptResult *scripting.ScriptExecutionResult
 }
 
 // IsSuccess returns true if the request was successful (2xx status code)

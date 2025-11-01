@@ -1,0 +1,66 @@
+### Test API Response with Handler
+# @name testWithHandler
+GET https://jsonplaceholder.typicode.com/posts/1
+Accept: application/json
+
+> {%
+    client.test("Request was successful", function() {
+        client.assert(response.status === 200, "Expected status 200");
+    });
+    
+    client.test("Response contains post data", function() {
+        client.assert(response.body.id === 1, "Expected post ID 1");
+        client.assert(response.body.userId === 1, "Expected user ID 1");
+        client.assert(response.body.title, "Post should have a title");
+    });
+    
+    client.log("Post title: " + response.body.title);
+    client.log("Response status: " + response.status);
+    
+    // Save values to global variables
+    client.global.set("postId", response.body.id);
+    client.global.set("userId", response.body.userId);
+%}
+
+###
+
+### Create Post with Handler
+# @name createPost
+POST https://jsonplaceholder.typicode.com/posts
+Content-Type: application/json
+
+{
+  "title": "Test Post",
+  "body": "This is a test post",
+  "userId": 1
+}
+
+> {%
+    client.test("Post created successfully", function() {
+        client.assert(response.status === 201, "Expected status 201 Created");
+    });
+    
+    client.test("Response contains new post ID", function() {
+        client.assert(response.body.id, "Should have an ID");
+        client.log("Created post with ID: " + response.body.id);
+    });
+    
+    // Save the new post ID
+    client.global.set("newPostId", response.body.id);
+%}
+
+###
+
+### Use Global Variable
+# @name getCreatedPost
+GET https://jsonplaceholder.typicode.com/posts/{{postId}}
+Accept: application/json
+
+> {%
+    client.log("Fetching post with ID: {{postId}}");
+    
+    client.test("Retrieved post successfully", function() {
+        client.assert(response.status === 200, "Expected status 200");
+        client.assert(response.body.id === 1, "Should match the saved post ID");
+    });
+%}

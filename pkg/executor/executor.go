@@ -7,6 +7,7 @@ import (
 	"postie/pkg/client"
 	"postie/pkg/environment"
 	"postie/pkg/httprequest"
+	"postie/pkg/scripting"
 )
 
 // Executor executes HTTP requests with environment variable resolution
@@ -14,6 +15,7 @@ type Executor struct {
 	client      *client.APIClient
 	environment *environment.ResolvedEnvironment
 	verbose     bool
+	globals     *scripting.GlobalStore // Global variables for response handlers
 }
 
 // ExecutorConfig holds configuration for the executor
@@ -37,6 +39,7 @@ func NewExecutor(env *environment.ResolvedEnvironment, config *ExecutorConfig) *
 		}),
 		environment: env,
 		verbose:     config.Verbose,
+		globals:     scripting.NewGlobalStore(),
 	}
 }
 
@@ -80,6 +83,24 @@ func (e *Executor) ExecuteRequest(request *httprequest.Request) (*ExecutionResul
 		Status:     resp.Status,
 	}
 
+	// Execute response handler if present
+	if expandedRequest.ResponseHandler != nil {
+		envVars := make(map[string]interface{})
+		if e.environment != nil {
+			envVars = e.environment.Variables
+		}
+
+		scriptResult := scripting.ExecuteResponseHandler(
+			expandedRequest.ResponseHandler,
+			resp,
+			expandedRequest,
+			envVars,
+			e.globals,
+		)
+
+		result.ScriptResult = scriptResult
+	}
+
 	return result, nil
 }
 
@@ -120,10 +141,13 @@ func (e *Executor) expandRequestVariables(request *httprequest.Request) (*httpre
 
 	resolver := environment.NewResolver()
 
+	// Create a combined environment with both env vars and globals
+	combinedEnv := e.getCombinedEnvironment()
+
 	// Expand URL
 	if request.URL != nil {
 		expanded.URL = &httprequest.URL{
-			Raw:       resolver.ExpandString(request.URL.Raw, e.environment),
+			Raw:       resolver.ExpandString(request.URL.Raw, combinedEnv),
 			Variables: request.URL.Variables,
 		}
 	}
@@ -134,7 +158,7 @@ func (e *Executor) expandRequestVariables(request *httprequest.Request) (*httpre
 		for i, header := range request.Headers {
 			expanded.Headers[i] = httprequest.Header{
 				Name:  header.Name,
-				Value: resolver.ExpandString(header.Value, e.environment),
+				Value: resolver.ExpandString(header.Value, combinedEnv),
 			}
 		}
 	}
@@ -144,12 +168,37 @@ func (e *Executor) expandRequestVariables(request *httprequest.Request) (*httpre
 		expanded.Body = &httprequest.RequestBody{
 			Type:        request.Body.Type,
 			ContentType: request.Body.ContentType,
-			Content:     resolver.ExpandString(request.Body.Content, e.environment),
+			Content:     resolver.ExpandString(request.Body.Content, combinedEnv),
 			Variables:   request.Body.Variables,
 		}
 	}
 
 	return &expanded, nil
+}
+
+// getCombinedEnvironment merges environment variables and global variables
+func (e *Executor) getCombinedEnvironment() *environment.ResolvedEnvironment {
+	// Start with environment variables
+	vars := make(map[string]interface{})
+	if e.environment != nil {
+		for k, v := range e.environment.Variables {
+			vars[k] = v
+		}
+	}
+
+	// Override/add global variables
+	if e.globals != nil {
+		globals := e.globals.GetAll()
+		for k, v := range globals {
+			vars[k] = v
+		}
+	}
+
+	return &environment.ResolvedEnvironment{
+		Name:      "combined",
+		Variables: vars,
+		Source:    make(map[string]string),
+	}
 }
 
 // buildClientRequest converts a parsed request to a client request
