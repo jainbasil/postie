@@ -1,0 +1,161 @@
+### Get all posts
+# Simple GET request to fetch all posts
+GET {{baseUrl}}/posts
+Accept: application/json
+
+###
+
+### Get specific post
+# Get a single post by ID
+GET {{baseUrl}}/posts/1
+Accept: application/json
+
+> {%
+  client.test("Post retrieved successfully", function() {
+    client.assert(response.status === 200, "Expected status 200");
+    client.assert(response.body.id === 1, "Expected post ID 1");
+    client.assert(response.body.hasOwnProperty("title"), "Post should have title");
+  });
+  
+  client.log("Post title: " + response.body.title);
+%}
+
+###
+
+### Create new post
+# POST request to create a new blog post
+POST {{baseUrl}}/posts
+Content-Type: application/json
+X-API-Key: {{apiKey}}
+
+{
+  "title": "My New Post",
+  "body": "This is the content of my new post",
+  "userId": 1
+}
+
+> {%
+  client.test("Post created successfully", function() {
+    client.assert(response.status === 201, "Expected status 201");
+    client.assert(response.body.hasOwnProperty("id"), "Response should contain ID");
+  });
+  
+  // Save the post ID for subsequent requests
+  client.global.set("postId", response.body.id);
+  client.log("Created post ID: " + response.body.id);
+%}
+
+###
+
+### Update post
+# Update an existing post using PUT
+PUT {{baseUrl}}/posts/{{postId}}
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "id": 1,
+  "title": "Updated Post Title",
+  "body": "This is the updated content",
+  "userId": 1
+}
+
+> {%
+  client.test("Post updated successfully", function() {
+    client.assert(response.status === 200, "Expected status 200");
+    client.assert(response.body.title === "Updated Post Title", "Title should be updated");
+  });
+%}
+
+###
+
+### Partial update post
+# Partially update a post using PATCH
+PATCH {{baseUrl}}/posts/1
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "title": "Partially Updated Title"
+}
+
+> {%
+  client.test("Post patched successfully", function() {
+    client.assert(response.status === 200, "Expected status 200");
+  });
+%}
+
+###
+
+### Delete post
+# Delete a specific post
+DELETE {{baseUrl}}/posts/{{postId}}
+Authorization: Bearer {{authToken}}
+X-API-Key: {{apiKey}}
+
+> {%
+  client.test("Post deleted successfully", function() {
+    client.assert(response.status === 200, "Expected status 200");
+  });
+  
+  client.log("Deleted post ID: " + client.global.get("postId"));
+  client.global.clear("postId");
+%}
+
+###
+
+### Get all users
+# Fetch all users with custom headers
+GET {{baseUrl}}/users
+Accept: application/json
+User-Agent: {{userAgent}}
+X-Request-ID: req-12345
+
+###
+
+### Get user by ID
+# Get specific user details
+GET {{baseUrl}}/users/1
+Accept: application/json
+
+> {%
+  client.test("User retrieved", function() {
+    client.assert(response.status === 200);
+    client.assert(response.body.hasOwnProperty("email"));
+  });
+  
+  client.global.set("userEmail", response.body.email);
+%}
+
+###
+
+### Get user's posts
+# Get all posts by a specific user
+GET {{baseUrl}}/posts?userId=1
+Accept: application/json
+
+> {%
+  client.test("User posts retrieved", function() {
+    client.assert(response.status === 200);
+    client.assert(Array.isArray(response.body), "Response should be an array");
+    client.assert(response.body.length > 0, "User should have posts");
+  });
+  
+  client.log("User has " + response.body.length + " posts");
+%}
+
+###
+
+### Get comments for a post
+# Fetch all comments for a specific post
+GET {{baseUrl}}/posts/1/comments
+Accept: application/json
+
+> {%
+  client.test("Comments retrieved", function() {
+    client.assert(response.status === 200);
+    client.assert(Array.isArray(response.body));
+  });
+%}
+
+###

@@ -1,0 +1,282 @@
+### Variables demonstration
+# You can define variables inline using @variableName syntax
+@hostname = jsonplaceholder.typicode.com
+@protocol = https
+@contentType = application/json
+
+###
+
+### Using inline variables
+GET {{protocol}}://{{hostname}}/posts/1
+Accept: {{contentType}}
+
+###
+
+### Request with query parameters
+# Query parameters can be specified in the URL
+GET {{baseUrl}}/posts?userId=1&_limit=5
+Accept: application/json
+
+###
+
+### Request with multiple headers
+GET {{baseUrl}}/users/1
+Accept: application/json
+User-Agent: Mozilla/5.0
+Cache-Control: no-cache
+X-Custom-Header: custom-value
+X-Request-ID: {{$uuid}}
+X-Timestamp: {{$timestamp}}
+
+###
+
+### POST with form data
+POST {{baseUrl}}/posts
+Content-Type: application/x-www-form-urlencoded
+
+title=Test Post&body=This is a test&userId=1
+
+###
+
+### POST with multipart form data
+POST {{baseUrl}}/upload
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="field1"
+
+value1
+--WebAppBoundary
+Content-Disposition: form-data; name="field2"
+
+value2
+--WebAppBoundary--
+
+###
+
+### Complex JSON body with variables
+POST {{baseUrl}}/posts
+Content-Type: application/json
+X-API-Key: {{apiKey}}
+
+{
+  "title": "Post about {{topic}}",
+  "body": "This post discusses {{topic}} in detail",
+  "userId": {{userId}},
+  "tags": ["{{tag1}}", "{{tag2}}", "{{tag3}}"],
+  "metadata": {
+    "created": "{{$timestamp}}",
+    "version": "{{apiVersion}}"
+  }
+}
+
+###
+
+### Request with dynamic UUID
+POST {{baseUrl}}/posts
+Content-Type: application/json
+
+{
+  "id": "{{$uuid}}",
+  "title": "Post with UUID",
+  "timestamp": "{{$timestamp}}"
+}
+
+> {%
+  client.test("Dynamic values", function() {
+    client.assert(response.status === 201);
+  });
+  
+  client.log("Request ID: {{$uuid}}");
+%}
+
+###
+
+### Using response data in tests
+GET {{baseUrl}}/posts/1
+
+> {%
+  // Access response properties
+  client.test("Response validation", function() {
+    client.assert(response.status === 200);
+    client.assert(response.contentType.mimeType === "application/json");
+    client.assert(response.body.hasOwnProperty("id"));
+  });
+  
+  // Test response body structure
+  const post = response.body;
+  client.test("Post structure", function() {
+    client.assert(typeof post.id === "number", "ID should be number");
+    client.assert(typeof post.title === "string", "Title should be string");
+    client.assert(typeof post.body === "string", "Body should be string");
+    client.assert(typeof post.userId === "number", "UserID should be number");
+  });
+  
+  // Log response details
+  client.log("Post ID: " + post.id);
+  client.log("Post Title: " + post.title);
+  client.log("Response time: " + response.responseTime + "ms");
+%}
+
+###
+
+### Chaining requests - Step 1: Create post
+# @name createPost
+POST {{baseUrl}}/posts
+Content-Type: application/json
+
+{
+  "title": "Chained Request Post",
+  "body": "This will be used in next request",
+  "userId": 1
+}
+
+> {%
+  client.test("Post created", function() {
+    client.assert(response.status === 201);
+  });
+  
+  // Save data for next request
+  client.global.set("createdPostId", response.body.id);
+  client.global.set("createdPostTitle", response.body.title);
+%}
+
+###
+
+### Chaining requests - Step 2: Get created post
+GET {{baseUrl}}/posts/{{createdPostId}}
+
+> {%
+  client.test("Retrieved created post", function() {
+    client.assert(response.status === 200);
+    client.assert(response.body.id == client.global.get("createdPostId"));
+  });
+  
+  client.log("Retrieved post: " + response.body.title);
+%}
+
+###
+
+### Conditional assertions
+GET {{baseUrl}}/users/1
+
+> {%
+  const user = response.body;
+  
+  client.test("User validation", function() {
+    // Multiple assertions
+    client.assert(response.status === 200, "Should return 200");
+    client.assert(user.id === 1, "User ID should be 1");
+    client.assert(user.email.includes("@"), "Email should contain @");
+    client.assert(user.name.length > 0, "Name should not be empty");
+  });
+  
+  // Conditional logic
+  if (user.email) {
+    client.global.set("userEmail", user.email);
+    client.log("Email saved: " + user.email);
+  }
+  
+  // Array checks
+  if (user.address) {
+    client.assert(user.address.hasOwnProperty("city"), "Address should have city");
+  }
+%}
+
+###
+
+### Error handling
+GET {{baseUrl}}/posts/9999999
+
+> {%
+  client.test("Handle 404", function() {
+    // This might return 200 with empty object instead of 404
+    // depending on the API implementation
+    if (response.status === 404) {
+      client.log("Resource not found (as expected)");
+    } else if (response.status === 200) {
+      client.log("API returned 200 for non-existent resource");
+    }
+  });
+%}
+
+###
+
+### Performance testing
+GET {{baseUrl}}/posts
+
+> {%
+  client.test("Performance check", function() {
+    const maxResponseTime = 2000; // 2 seconds
+    client.assert(
+      response.responseTime < maxResponseTime,
+      "Response time should be under " + maxResponseTime + "ms, got " + response.responseTime + "ms"
+    );
+  });
+  
+  client.log("Response time: " + response.responseTime + "ms");
+%}
+
+###
+
+### Testing JSON arrays
+GET {{baseUrl}}/posts
+
+> {%
+  client.test("Array validation", function() {
+    client.assert(Array.isArray(response.body), "Response should be an array");
+    client.assert(response.body.length > 0, "Array should not be empty");
+  });
+  
+  // Test first element
+  const firstPost = response.body[0];
+  client.test("First post structure", function() {
+    client.assert(firstPost.hasOwnProperty("id"));
+    client.assert(firstPost.hasOwnProperty("title"));
+    client.assert(firstPost.hasOwnProperty("body"));
+  });
+  
+  // Count and log
+  client.log("Total posts: " + response.body.length);
+  client.log("First post title: " + firstPost.title);
+%}
+
+###
+
+### Complex nested response testing
+GET {{baseUrl}}/users/1
+
+> {%
+  const user = response.body;
+  
+  client.test("Nested object validation", function() {
+    // Test nested address
+    if (user.address) {
+      client.assert(user.address.hasOwnProperty("street"));
+      client.assert(user.address.hasOwnProperty("city"));
+      client.assert(user.address.hasOwnProperty("zipcode"));
+      
+      // Test geo coordinates
+      if (user.address.geo) {
+        client.assert(typeof user.address.geo.lat === "string");
+        client.assert(typeof user.address.geo.lng === "string");
+      }
+    }
+    
+    // Test nested company
+    if (user.company) {
+      client.assert(user.company.hasOwnProperty("name"));
+      client.assert(user.company.name.length > 0);
+    }
+  });
+  
+  // Log nested data
+  if (user.address) {
+    client.log("User location: " + user.address.city);
+  }
+  if (user.company) {
+    client.log("Company: " + user.company.name);
+  }
+%}
+
+###

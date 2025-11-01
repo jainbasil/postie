@@ -1,0 +1,242 @@
+### Login
+# @name login
+# Authenticate user and get access token
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin@example.com",
+  "password": "secure-password-123"
+}
+
+> {%
+  client.test("Login successful", function() {
+    client.assert(response.status === 200, "Expected status 200");
+    client.assert(response.body.hasOwnProperty("token"), "Token should be present");
+    client.assert(response.body.hasOwnProperty("user"), "User data should be present");
+  });
+  
+  // Save authentication token for subsequent requests
+  client.global.set("authToken", response.body.token);
+  client.global.set("userId", response.body.user.id);
+  client.global.set("userEmail", response.body.user.email);
+  
+  client.log("✓ Logged in as: " + response.body.user.email);
+  client.log("✓ Token saved for subsequent requests");
+%}
+
+###
+
+### Refresh token
+# @name refreshToken
+# Get a new access token using refresh token
+POST {{baseUrl}}/auth/refresh
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+> {%
+  client.test("Token refreshed", function() {
+    client.assert(response.status === 200);
+    client.assert(response.body.hasOwnProperty("token"));
+  });
+  
+  client.global.set("authToken", response.body.token);
+  client.log("✓ Token refreshed");
+%}
+
+###
+
+### Get current user profile
+# Fetch authenticated user's profile
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{authToken}}
+Accept: application/json
+
+> {%
+  client.test("Profile retrieved", function() {
+    client.assert(response.status === 200);
+    client.assert(response.body.email === client.global.get("userEmail"));
+  });
+  
+  client.log("User profile: " + response.body.name);
+%}
+
+###
+
+### Update user profile
+# Update authenticated user's profile information
+PUT {{baseUrl}}/auth/me
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "name": "Updated Name",
+  "bio": "This is my updated bio",
+  "website": "https://example.com"
+}
+
+> {%
+  client.test("Profile updated", function() {
+    client.assert(response.status === 200);
+    client.assert(response.body.name === "Updated Name");
+  });
+%}
+
+###
+
+### Change password
+# Change user password
+POST {{baseUrl}}/auth/change-password
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "currentPassword": "old-password",
+  "newPassword": "new-secure-password-456",
+  "confirmPassword": "new-secure-password-456"
+}
+
+> {%
+  client.test("Password changed", function() {
+    client.assert(response.status === 200);
+    client.assert(response.body.message === "Password updated successfully");
+  });
+  
+  client.log("✓ Password changed successfully");
+%}
+
+###
+
+### Logout
+# Invalidate current access token
+POST {{baseUrl}}/auth/logout
+Authorization: Bearer {{authToken}}
+
+> {%
+  client.test("Logout successful", function() {
+    client.assert(response.status === 200);
+  });
+  
+  // Clear all authentication data
+  client.global.clear("authToken");
+  client.global.clear("userId");
+  client.global.clear("userEmail");
+  
+  client.log("✓ Logged out successfully");
+%}
+
+###
+
+### Register new user
+# Create a new user account
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "New User",
+  "email": "newuser@example.com",
+  "password": "secure-password-789",
+  "confirmPassword": "secure-password-789"
+}
+
+> {%
+  client.test("User registered", function() {
+    client.assert(response.status === 201, "Expected status 201");
+    client.assert(response.body.hasOwnProperty("user"));
+    client.assert(response.body.hasOwnProperty("token"));
+  });
+  
+  // Auto-login after registration
+  client.global.set("authToken", response.body.token);
+  client.global.set("userId", response.body.user.id);
+  
+  client.log("✓ User registered: " + response.body.user.email);
+%}
+
+###
+
+### Request password reset
+# Send password reset email
+POST {{baseUrl}}/auth/forgot-password
+Content-Type: application/json
+
+{
+  "email": "user@example.com"
+}
+
+> {%
+  client.test("Reset email sent", function() {
+    client.assert(response.status === 200);
+  });
+  
+  client.log("✓ Password reset email sent");
+%}
+
+###
+
+### Reset password with token
+# Reset password using token from email
+POST {{baseUrl}}/auth/reset-password
+Content-Type: application/json
+
+{
+  "token": "reset-token-from-email",
+  "newPassword": "new-password-123",
+  "confirmPassword": "new-password-123"
+}
+
+> {%
+  client.test("Password reset successful", function() {
+    client.assert(response.status === 200);
+  });
+%}
+
+###
+
+### Verify email
+# Verify user email address
+GET {{baseUrl}}/auth/verify-email?token=verification-token-from-email
+
+> {%
+  client.test("Email verified", function() {
+    client.assert(response.status === 200);
+  });
+  
+  client.log("✓ Email verified successfully");
+%}
+
+###
+
+### OAuth login (Google)
+# Initiate OAuth login flow
+GET {{baseUrl}}/auth/oauth/google
+Accept: application/json
+
+###
+
+### OAuth callback
+# Handle OAuth callback with authorization code
+POST {{baseUrl}}/auth/oauth/callback
+Content-Type: application/json
+
+{
+  "provider": "google",
+  "code": "authorization-code-from-oauth",
+  "redirectUri": "https://example.com/callback"
+}
+
+> {%
+  client.test("OAuth login successful", function() {
+    client.assert(response.status === 200);
+    client.assert(response.body.hasOwnProperty("token"));
+  });
+  
+  client.global.set("authToken", response.body.token);
+  client.log("✓ OAuth login successful");
+%}
+
+###
