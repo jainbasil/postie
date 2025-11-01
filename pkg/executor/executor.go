@@ -33,9 +33,19 @@ type ExecutorConfig struct {
 func NewExecutor(env *environment.ResolvedEnvironment, config *ExecutorConfig) *Executor {
 	if config == nil {
 		config = &ExecutorConfig{
-			Timeout:       30 * time.Second,
 			Verbose:       false,
 			SaveResponses: false,
+		}
+	}
+
+	// Determine timeout: use config value, or check environment, or no timeout
+	timeout := config.Timeout
+	if timeout == 0 && env != nil {
+		// Check if environment has a timeout variable (in milliseconds)
+		if timeoutVar, exists := env.GetVariable("timeout"); exists {
+			if timeoutMs, err := timeoutVar.GetInt(); err == nil && timeoutMs > 0 {
+				timeout = time.Duration(timeoutMs) * time.Millisecond
+			}
 		}
 	}
 
@@ -46,7 +56,7 @@ func NewExecutor(env *environment.ResolvedEnvironment, config *ExecutorConfig) *
 
 	return &Executor{
 		client: client.NewClient(&client.Config{
-			Timeout: config.Timeout,
+			Timeout: timeout,
 		}),
 		environment:     env,
 		verbose:         config.Verbose,

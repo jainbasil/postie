@@ -51,10 +51,8 @@ func NewClient(config *Config) *APIClient {
 		config = &Config{}
 	}
 
+	// Use the timeout from config (0 means no timeout)
 	timeout := config.Timeout
-	if timeout == 0 {
-		timeout = 30 * time.Second
-	}
 
 	client := &APIClient{
 		httpClient: &http.Client{
