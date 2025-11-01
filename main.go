@@ -18,11 +18,6 @@ func main() {
 	app := cli.NewCLI("postie", "1.0.0", "A powerful command-line API testing tool")
 
 	// Add commands
-	app.AddCommand(commands.CollectionCommands())
-	app.AddCommand(commands.EnvironmentCommands())
-	app.AddCommand(commands.RequestGroupCommands())
-	app.AddCommand(commands.RequestCommands())
-	app.AddCommand(commands.ContextCommands())
 	app.AddCommand(commands.HTTPCommands())
 	app.AddCommand(demoCommand())
 

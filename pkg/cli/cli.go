@@ -109,7 +109,7 @@ func (c *CLI) PrintUsage() {
 	fmt.Println("Resources:")
 
 	// Print commands in order
-	commandOrder := []string{"collection", "environment", "request-group", "request", "context", "http", "demo", "version", "help"}
+	commandOrder := []string{"http", "demo", "version", "help"}
 	for _, name := range commandOrder {
 		if cmd, ok := c.Commands[name]; ok {
 			fmt.Printf("  %-15s %s\n", name, cmd.Description)
@@ -120,9 +120,10 @@ func (c *CLI) PrintUsage() {
 	fmt.Println("  --help, -h      Show help information")
 	fmt.Println("  --version, -v   Show version information")
 	fmt.Println("\nExamples:")
-	fmt.Printf("  %s collection create --name \"My API\" --file my-api.collection.json\n", c.Name)
-	fmt.Printf("  %s request run --id \"get-users\"\n", c.Name)
-	fmt.Printf("  %s http get --url \"https://api.github.com/users/octocat\"\n", c.Name)
+	fmt.Printf("  %s http run requests.http --env production\n", c.Name)
+	fmt.Printf("  %s http parse requests.http --format json\n", c.Name)
+	fmt.Printf("  %s http list --recursive\n", c.Name)
+	fmt.Printf("  %s http run requests.http --request \"Get Users\" --verbose\n", c.Name)
 	fmt.Printf("\nRun '%s <resource> help' for more information on a resource.\n", c.Name)
 }
 

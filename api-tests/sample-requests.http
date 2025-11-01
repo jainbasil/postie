@@ -1,0 +1,51 @@
+### Get all posts
+# @name getAllPosts
+GET {{baseUrl}}/posts
+Accept: application/json
+User-Agent: {{userAgent}}
+
+###
+
+### Get a specific post
+# @name getPost
+GET {{baseUrl}}/posts/1
+Accept: application/json
+Authorization: Bearer {{authToken}}
+
+###
+
+### Create a new post  
+# @name createPost
+POST {{baseUrl}}/posts
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+X-API-Key: {{apiKey}}
+
+{
+  "title": "Test Post",
+  "body": "This is a test post created via HTTP request file",
+  "userId": 1
+}
+
+###
+
+### Update a post
+# @name updatePost
+PUT {{baseUrl}}/posts/1
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "id": 1,
+  "title": "Updated Post Title",
+  "body": "Updated post content",
+  "userId": 1
+}
+
+###
+
+### Delete a post
+# @name deletePost
+DELETE {{baseUrl}}/posts/1
+Authorization: Bearer {{authToken}}
+X-API-Key: {{apiKey}}
