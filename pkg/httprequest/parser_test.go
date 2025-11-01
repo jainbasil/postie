@@ -441,3 +441,81 @@ POST https://example.com/create`
 		t.Errorf("Expected POST method, got %s", req2.Method)
 	}
 }
+
+func TestParserMultipleHeadersWithVariables(t *testing.T) {
+	// Test case for the reported issue: multiple headers with variables
+	input := `### Q1
+GET http://localhost:5001/plugin?userMessage=Hello%20World
+Content-type: application/json
+Accept: application/json
+Authorization: Bearer {{token}}
+
+> {%
+  client.test("Login successful", function() {
+    client.assert(response.status === 200, "Expected status 200");
+    client.assert(response.body.token, "Token should be present");
+  });
+  
+  // Save token for subsequent requests
+  client.global.set("authToken", response.body.token);
+%}`
+
+	requestsFile, err := ParseFile("test.http", input)
+	if err != nil {
+		t.Fatalf("Parse error: %v", err)
+	}
+
+	if len(requestsFile.Requests) != 1 {
+		t.Fatalf("Expected 1 request, got %d", len(requestsFile.Requests))
+	}
+
+	req := requestsFile.Requests[0]
+
+	// Issue 1: Check that all headers are parsed (not just the first one)
+	if len(req.Headers) != 3 {
+		t.Errorf("Expected 3 headers, got %d", len(req.Headers))
+	}
+
+	// Verify each header
+	expectedHeaders := map[string]string{
+		"Content-type":  "application/json",
+		"Accept":        "application/json",
+		"Authorization": "Bearer {{token}}",
+	}
+
+	for _, header := range req.Headers {
+		expectedValue, exists := expectedHeaders[header.Name]
+		if !exists {
+			t.Errorf("Unexpected header: %s", header.Name)
+			continue
+		}
+
+		if header.Value != expectedValue {
+			t.Errorf("Header %s: expected value %q, got %q", header.Name, expectedValue, header.Value)
+		}
+	}
+
+	// Issue 2: Check that the Authorization header has correct spacing
+	// (space between "Bearer" and "{{token}}")
+	authHeader := ""
+	for _, header := range req.Headers {
+		if header.Name == "Authorization" {
+			authHeader = header.Value
+			break
+		}
+	}
+
+	if authHeader != "Bearer {{token}}" {
+		t.Errorf("Authorization header spacing issue: expected %q, got %q", "Bearer {{token}}", authHeader)
+	}
+
+	// Verify the variable was extracted
+	if len(req.Headers[2].Variables) != 1 || req.Headers[2].Variables[0] != "token" {
+		t.Error("Expected 'token' variable to be extracted from Authorization header")
+	}
+
+	// Verify response handler was parsed
+	if req.ResponseHandler == nil {
+		t.Error("Expected response handler to be parsed")
+	}
+}

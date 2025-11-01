@@ -321,12 +321,22 @@ func (p *Parser) parseHeaders(request *Request) error {
 				return err
 			}
 			request.Headers = append(request.Headers, *header)
+
+			// Skip the newline after the header to move to the next line
+			if p.check(TokenNewline) {
+				p.advance()
+			}
 		} else if p.check(TokenHeaderName) {
 			header, err := p.parseHeader()
 			if err != nil {
 				return err
 			}
 			request.Headers = append(request.Headers, *header)
+
+			// Skip the newline after the header to move to the next line
+			if p.check(TokenNewline) {
+				p.advance()
+			}
 		} else {
 			// Not a header, stop parsing headers
 			break
@@ -390,16 +400,22 @@ func (p *Parser) parseHeader() (*Header, error) {
 		colonIndex := strings.Index(text, ":")
 		name = strings.TrimSpace(text[:colonIndex])
 
-		// Get value part after colon
+		// Get value part after colon (preserve trailing spaces if variables follow)
+		var initialValue string
 		if colonIndex+1 < len(text) {
-			value = strings.TrimSpace(text[colonIndex+1:])
+			// Don't trim yet - we need to preserve spaces before variables
+			initialValue = text[colonIndex+1:]
+			// Only trim leading space (the space right after the colon)
+			if len(initialValue) > 0 && initialValue[0] == ' ' {
+				initialValue = initialValue[1:]
+			}
 		}
 		p.advance()
 
 		// Continue collecting value tokens (like variables) until newline
 		var valueParts []string
-		if value != "" {
-			valueParts = append(valueParts, value)
+		if initialValue != "" {
+			valueParts = append(valueParts, initialValue)
 		}
 
 		for !p.check(TokenNewline) && !p.isAtEnd() && !p.check(TokenRequestSeparator) {
@@ -423,7 +439,10 @@ func (p *Parser) parseHeader() (*Header, error) {
 			}
 		}
 
-		value = strings.TrimSpace(strings.Join(valueParts, ""))
+		// Join all parts without trimming to preserve spaces, then trim only at the very end
+		value = strings.Join(valueParts, "")
+		// Only trim trailing spaces, not leading ones that might be significant
+		value = strings.TrimRight(value, " \t")
 
 	} else {
 		return nil, p.error("expected header name")
