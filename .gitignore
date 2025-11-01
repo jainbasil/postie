@@ -79,6 +79,9 @@ http-client.private.env.json
 # HTTP response storage
 .http-responses/
 
+# Context files (local development preferences)
+.postie-context.json
+
 # Configuration files with secrets
 config.json
 config.yaml

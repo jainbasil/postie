@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"postie/pkg/cli"
+	"postie/pkg/context"
 	"postie/pkg/environment"
 	"postie/pkg/executor"
 	"postie/pkg/httprequest"
@@ -31,42 +32,73 @@ func httpRunCommand() *cli.Command {
 		Name:        "run",
 		Description: "Execute HTTP requests from .http file",
 		Action: func(args []string) error {
-			if len(args) == 0 {
-				return fmt.Errorf("HTTP request file required\nUsage: postie http run <file.http> [--env development] [--request name_or_number]")
+			// Load context to get defaults
+			mgr := context.NewManager()
+			ctx, err := mgr.Load()
+			if err != nil {
+				return err
 			}
 
-			var env, envFile, privateEnvFile, requestFilter string
+			// Determine HTTP file - from args or context
+			var httpFile string
+			var parseArgs []string
+			
+			// Check if first arg is a flag or a file
+			if len(args) > 0 && !strings.HasPrefix(args[0], "-") {
+				// First arg is the HTTP file
+				httpFile = args[0]
+				parseArgs = args[1:]
+			} else if ctx.HTTPFile != "" {
+				// Use context default
+				httpFile = ctx.HTTPFile
+				parseArgs = args
+			} else {
+				return fmt.Errorf("HTTP request file required\nUsage: postie http run <file.http> [--env development] [--request name_or_number]\nOr use 'postie context set --http-file <file>' to set a default")
+			}
+
+			var env, envFile, privateEnvFile, requestFilter, responsesDir string
 			var verbose, saveResponses bool
 
 			envFlag := &cli.StringFlag{Name: "env", ShortName: "e", Value: env, Usage: "Environment to use", Required: false}
 			envFileFlag := &cli.StringFlag{Name: "env-file", Value: envFile, Usage: "Path to environment file", Required: false}
 			privateEnvFileFlag := &cli.StringFlag{Name: "private-env-file", Value: privateEnvFile, Usage: "Path to private environment file", Required: false}
 			requestFlag := &cli.StringFlag{Name: "request", ShortName: "r", Value: requestFilter, Usage: "Specific request name or number to run", Required: false}
+			responsesDirFlag := &cli.StringFlag{Name: "responses-dir", Value: responsesDir, Usage: "Directory to save responses", Required: false}
 			verboseFlag := &cli.BoolFlag{Name: "verbose", ShortName: "v", Value: verbose, Usage: "Verbose output"}
 			saveResponsesFlag := &cli.BoolFlag{Name: "save-responses", ShortName: "s", Value: saveResponses, Usage: "Save responses to files"}
 
-			_, err := cli.ParseFlags(args[1:], []*cli.StringFlag{envFlag, envFileFlag, privateEnvFileFlag, requestFlag}, []*cli.BoolFlag{verboseFlag, saveResponsesFlag})
+			_, err = cli.ParseFlags(parseArgs, []*cli.StringFlag{envFlag, envFileFlag, privateEnvFileFlag, requestFlag, responsesDirFlag}, []*cli.BoolFlag{verboseFlag, saveResponsesFlag})
 			if err != nil {
 				return err
 			}
 
+			// Get flag values
 			env = envFlag.Value
-			if env == "" {
-				env = "development"
-			}
 			envFile = envFileFlag.Value
-			if envFile == "" {
-				envFile = "http-client.env.json"
-			}
 			privateEnvFile = privateEnvFileFlag.Value
-			if privateEnvFile == "" {
-				privateEnvFile = "http-client.private.env.json"
-			}
 			requestFilter = requestFlag.Value
+			responsesDir = responsesDirFlag.Value
 			verbose = verboseFlag.Value
 			saveResponses = saveResponsesFlag.Value
 
-			return executeHttpFileRun(args[0], env, envFile, privateEnvFile, requestFilter, verbose, saveResponses)
+			// Merge context defaults with flags (flags take precedence)
+			context.MergeWithFlags(ctx, &httpFile, &env, &envFile, &privateEnvFile, &responsesDir, &saveResponses)
+
+			// Set defaults if still empty
+			if env == "" {
+				env = "development"
+			}
+			if envFile == "" {
+				envFile = "http-client.env.json"
+			}
+			if privateEnvFile == "" {
+				privateEnvFile = "http-client.private.env.json"
+			}
+
+			// Note: responsesDir is merged from context but not yet used in executeHttpFileRun
+			// This is for future enhancement when custom response directories are supported
+
+			return executeHttpFileRun(httpFile, env, envFile, privateEnvFile, requestFilter, verbose, saveResponses)
 		},
 	}
 }

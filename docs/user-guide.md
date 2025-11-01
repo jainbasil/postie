@@ -8,6 +8,7 @@ Postie is a powerful API testing tool that supports the HTTP Request in Editor f
 
 - [Getting Started](#getting-started)
 - [Writing HTTP Requests](#writing-http-requests)
+- [Context Management](#context-management)
 - [Environment Variables](#environment-variables)
 - [Response Handler Scripts](#response-handler-scripts)
 - [Global Variables](#global-variables)
@@ -114,6 +115,90 @@ Content-Type: application/json
   "username": "johndoe",
   "email": "john@example.com",
   "age": 30
+}
+```
+
+## Context Management
+
+Context management allows you to set default values for HTTP files and environments in a specific directory, eliminating the need to specify them with every command.
+
+### Setting Context
+
+Use the `context set` command to configure defaults for the current directory:
+
+```bash
+# Set default HTTP file and environment
+postie context set --http-file api-tests/requests.http --env development
+
+# Include save responses option
+postie context set --http-file requests.http --env production --save-responses
+
+# Set custom environment file paths
+postie context set \
+  --http-file api.http \
+  --env staging \
+  --env-file custom-env.json \
+  --private-env-file custom-private.json
+```
+
+Available options:
+- `--http-file`: Default HTTP request file
+- `--env`: Default environment name
+- `--env-file`: Path to public environment file
+- `--private-env-file`: Path to private environment file
+- `--save-responses`: Enable automatic response saving
+- `--responses-dir`: Custom directory for saved responses
+
+### Using Context
+
+Once context is set, you can omit common flags:
+
+```bash
+# Without context
+postie http run api-tests/requests.http --env development --request getUserById
+
+# With context (after setting http-file and env)
+postie http run --request getUserById
+
+# Context values can still be overridden
+postie http run --env production
+```
+
+### Viewing Context
+
+Check current context settings:
+
+```bash
+postie context show
+```
+
+Output example:
+```
+Context file: /path/to/project/.postie-context.json
+
+HTTP File:         /path/to/project/api-tests/requests.http
+Environment:       development
+Save Responses:    true
+```
+
+### Clearing Context
+
+Remove context settings:
+
+```bash
+postie context clear
+```
+
+### Context File
+
+Context is stored in `.postie-context.json` in the current directory. This file should be added to `.gitignore` as it contains local development preferences.
+
+Example `.postie-context.json`:
+```json
+{
+  "httpFile": "/home/user/project/requests.http",
+  "environment": "development",
+  "saveResponses": true
 }
 ```
 
@@ -427,6 +512,54 @@ DELETE {{baseUrl}}/posts/{{postId}}
 
 ## Command Reference
 
+### Context Management
+
+Set default HTTP file and environment for a directory to avoid specifying them every time:
+
+```bash
+# Set context with HTTP file and environment
+postie context set --http-file requests.http --env development
+
+# Set with save responses enabled
+postie context set --http-file api.http --env production --save-responses
+
+# Show current context
+postie context show
+
+# Clear context
+postie context clear
+```
+
+Once context is set, you can run requests without specifying the file:
+
+```bash
+# Runs using context defaults
+postie http run --request getUserById
+
+# Override environment from context
+postie http run --env staging
+```
+
+Context is saved to `.postie-context.json` in the current directory (should be added to `.gitignore`).
+
+### Environment Management
+
+Inspect and manage environment files:
+
+```bash
+# List all available environments
+postie env list
+
+# Show variables for a specific environment
+postie env show development
+
+# Show including private variables
+postie env show development --show-private
+
+# Use custom environment file path
+postie env list --env-file custom-env.json
+```
+
 ### Run Requests
 
 Execute requests from a `.http` file:
@@ -441,8 +574,15 @@ postie http run requests.http --env production
 # Run with verbose output
 postie http run requests.http --verbose
 
-# Run specific request by name
+# Run specific request by name or number
 postie http run requests.http --request createUser
+postie http run requests.http --request 1
+
+# Save responses to files
+postie http run requests.http --save-responses
+
+# Using context (no file needed if context is set)
+postie http run --request getUserById
 ```
 
 ### Parse Requests
