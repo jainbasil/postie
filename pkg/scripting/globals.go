@@ -62,7 +62,7 @@ func (g *GlobalStore) ClearAll() {
 func (g *GlobalStore) GetAll() map[string]interface{} {
 	g.mu.RLock()
 	defer g.mu.RUnlock()
-	
+
 	// Return a copy to avoid race conditions
 	copy := make(map[string]interface{}, len(g.variables))
 	for k, v := range g.variables {

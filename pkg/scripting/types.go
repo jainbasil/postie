@@ -15,11 +15,11 @@ type ScriptContext struct {
 
 // TestResult represents the result of a client.test() call
 type TestResult struct {
-	Name    string
-	Passed  bool
-	Error   string
-	Line    int
-	Column  int
+	Name   string
+	Passed bool
+	Error  string
+	Line   int
+	Column int
 }
 
 // AssertionError represents a failed assertion
